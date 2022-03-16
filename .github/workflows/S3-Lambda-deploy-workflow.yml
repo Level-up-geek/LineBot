@@ -21,7 +21,7 @@ jobs:
       #アクションとして他ディレクトリに配置し
       #ここからusesで使うようにする
       - name: create packages
-        run: mkdir packages
+        run: mkdir -v packages
       - name: ready zip dir
         run: cd ./packages
       - name: pwd
