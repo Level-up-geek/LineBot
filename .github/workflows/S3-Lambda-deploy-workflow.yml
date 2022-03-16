@@ -31,7 +31,7 @@ jobs:
       - name: cp
         run: cp ./lambda_function.py ./packages/lambda_function.py
       - name: pip install
-        run: pip install -r require.text -t ./packages/
+        run: pip install -r ./requirements.txt -t ./packages/
 
       - name: create zip
         run: zip -r main.zip packages/* 
