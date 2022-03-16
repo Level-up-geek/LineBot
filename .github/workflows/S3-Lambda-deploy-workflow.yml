@@ -18,6 +18,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: create packages
+        run: mkdir packages
+      - name: ready zip dir
+      - run: cd packages
+      - run: cp ../lambda_function.py lambda_function.py
+      - run: pip install -r ../require.text -t ./
+
       - name: create zip
         run: zip -r main.zip packages/* 
 
