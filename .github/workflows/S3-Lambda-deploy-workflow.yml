@@ -42,8 +42,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
       
-      - name: upload main.zip to s3
-        run: aws s3 cp main.zip s3://levelupgeek
+      - name: upload lambda_function.zip to s3
+        run: aws s3 cp lambda_function.zip s3://levelupgeek
 
   Lambda-deploy:
     needs: S3-upload
@@ -66,6 +66,6 @@ jobs:
       - name: update Lambda function
       #不要な情報を出力しないようにフィルタリングする
         run: |
-          aws lambda update-function-code --function-name LineBot --s3-bucket levelupgeek --s3-key main.zip\
+          aws lambda update-function-code --function-name LineBot --s3-bucket levelupgeek --s3-key lambda_function.zip\
           | jq '.FunctionName, .LastUpdateStatus'
      
