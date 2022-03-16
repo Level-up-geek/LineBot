@@ -23,7 +23,7 @@ jobs:
       - name: create packages
         run: mkdir -v packages
       - name: ready zip dir
-        run: cd ./packages
+        run: cd ./packages/
       - name: pwd
         run: pwd
       - name: ls
