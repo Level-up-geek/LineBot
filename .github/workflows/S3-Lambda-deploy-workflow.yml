@@ -18,12 +18,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      #アクションとして他ディレクトリに配置し
+      #ここからusesで使うようにする
       - name: create packages
         run: mkdir packages
       - name: ready zip dir
-      - run: cd packages
-      - run: cp ../lambda_function.py lambda_function.py
-      - run: pip install -r ../require.text -t ./
+        run: cd packages
+      - name: cp
+        run: cp ../lambda_function.py lambda_function.py
+      - name: pip install
+        run: pip install -r ../require.text -t ./
 
       - name: create zip
         run: zip -r main.zip packages/* 
