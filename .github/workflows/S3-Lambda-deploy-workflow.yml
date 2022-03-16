@@ -26,6 +26,8 @@ jobs:
         run: cd packages
       - name: pwd
         run: pwd
+      - name: ls
+        run: ls
       - name: cp
         run: cp ../lambda_function.py lambda_function.py
       - name: pip install
