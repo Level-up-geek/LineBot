@@ -22,16 +22,16 @@ jobs:
       #ここからusesで使うようにする
       - name: create packages
         run: mkdir -v packages
-      - name: ready zip dir
-        run: cd ./packages/
+      #- name: ready zip dir
+      #  run: cd ./packages/
       - name: pwd
         run: pwd
       - name: ls
         run: ls
       - name: cp
-        run: cp ../lambda_function.py lambda_function.py
+        run: cp ./lambda_function.py ./packages/lambda_function.py
       - name: pip install
-        run: pip install -r ../require.text -t ./
+        run: pip install -r require.text -t ./packages/
 
       - name: create zip
         run: zip -r main.zip packages/* 
