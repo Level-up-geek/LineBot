@@ -15,25 +15,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    #v3がでていた。変えた方がいいかも
       - name: Checkout
         uses: actions/checkout@v2
 
-      #アクションとして他ディレクトリに配置し
-      #ここからusesで使うようにする
-      - name: create packages
-        run: mkdir -v packages
-      #謎に移動はできないので、カレントディレクトリで行う
-      #- name: ready zip dir
-      #  run: cd ./packages/
-      #- name: cp
-      #  run: cp ./lambda_function.py ./packages/lambda_function.py
-      - name: pip install
-        run: pip install -r ./requirements.txt -t ./packages/
-
-      - name: create zip lambda_function
-        run: zip lambda_function.zip lambda_function.py
+      - name: create packages and pip install and  create zip lambda_function
+        run: |
+          mkdir -v packages
+          pip install -r ./requirements.txt -t ./packages/
+          zip lambda_function.zip lambda_function.py
+      
+      #packagesディレクトリを含まないように。
       - name: create zip library  
-        run: zip -j lambda_function.zip packages/* 
+        run: zip -j lambda_function.zip ./* 
+        working-directory: ./packages
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -51,7 +46,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      #公式からバージョンを確認する。https://github.com/marketplace/actions/setup-python
+
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
