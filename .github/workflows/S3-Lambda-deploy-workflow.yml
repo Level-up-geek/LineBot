@@ -27,7 +27,7 @@ jobs:
       
       #packagesディレクトリを含まないように。
       - name: create zip library  
-        run: zip -j ./lambda_function.zip ./* 
+        run: zip -r ./lambda_function.zip ./* 
         working-directory: ./packages
 
       - name: Configure AWS Credentials
