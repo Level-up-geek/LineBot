@@ -28,7 +28,7 @@ jobs:
       #packagesディレクトリを含まないように。
       #それが、できない、、、
       - name: create zip library  
-        run: zip -u ./lambda_function.zip -j ./packages/* 
+        run: zip -rju ./lambda_function.zip ./packages/* 
       
       - name: cat lambda_function.zip
         run: zipinfo lambda_function.zip
