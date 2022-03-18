@@ -28,7 +28,8 @@ jobs:
          run: |
           mkdir packages
           pip install -r ./requirements.txt -t ./packages/
-          cp lambda_function.py .env packages/
+          cp lambda_function.py packages/
+          cp .env packages/
           compress-archive packages/* lambda_function
         
       #windowsでzipにするー＞packagesディレクトリを含まず圧縮できる。
