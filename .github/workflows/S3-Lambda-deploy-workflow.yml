@@ -10,27 +10,42 @@ on:
   workflow_dispatch:
     branches:
       - main
+
 jobs:
-  S3-upload:
-    runs-on: ubuntu-latest
-
+  Zip-create:
+    runs-on: windows-2022
+    
     steps:
-    #v3がでていた。変えた方がいいかも
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: create packages and pip install and  create zip lambda_function
-        run: |
+       - name: Checkout
+         uses: actions/checkout@v3
+       
+       - name: create packages and pip install and cp lambda_function.py and create zip lambda_function
+         run: |
           mkdir -v packages
           pip install -r ./requirements.txt -t ./packages/
-          zip lambda_function.zip lambda_function.py
+          cp lambda_function.py packages/lumbda_function.py
+          compress-archive packages/* lambda_function
+        
+      #windowsでzipにするー＞packagesディレクトリを含まず圧縮できる。
+       - name: Upload lambda_function.zip for Zip-create
+         uses: actions/upload-artifact@v3
+         with:
+          name: lambda_function
+          path: lambda_function.zip
+  
+  S3-upload:
+    runs-on: ubuntu-latest
+    needs: Zip-create
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       
-      #packagesディレクトリを含まないように。
-      #それが、できない、、、
-      #-jを付けるとLambdaにパッケージ達がいないし、、、
-      - name: create zip library  
-        run: zip -ju ./lambda_function.zip ./packages/* 
-      
+      - name: Download lambda_function.zip for Zip-create
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda_function
+
       - name: cat lambda_function.zip
         run: zipinfo lambda_function.zip
         
@@ -49,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v2
         with:
