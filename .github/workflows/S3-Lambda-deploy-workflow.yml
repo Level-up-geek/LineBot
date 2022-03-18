@@ -18,12 +18,17 @@ jobs:
     steps:
        - name: Checkout
          uses: actions/checkout@v3
-       
-       - name: create packages and pip install and cp lambda_function.py and create zip lambda_function
+
+       - name: create env and write secret information
+         run: | 
+          New-Item .env
+          echo ${{ secrets.LINE_ACCESS_KEY }} >> .env
+
+       - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
           mkdir packages
           pip install -r ./requirements.txt -t ./packages/
-          cp lambda_function.py packages/lambda_function.py
+          cp lambda_function.py .env packages/
           compress-archive packages/* lambda_function
         
       #windowsでzipにするー＞packagesディレクトリを含まず圧縮できる。
