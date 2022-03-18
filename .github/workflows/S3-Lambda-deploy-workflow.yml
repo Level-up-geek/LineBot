@@ -21,7 +21,7 @@ jobs:
        
        - name: create packages and pip install and cp lambda_function.py and create zip lambda_function
          run: |
-          mkdir -v packages
+          mkdir packages
           pip install -r ./requirements.txt -t ./packages/
           cp lambda_function.py packages/lumbda_function.py
           compress-archive packages/* lambda_function
