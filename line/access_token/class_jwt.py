@@ -11,15 +11,16 @@ import os
 
 """公開鍵と秘密鍵の生成 and 秘密鍵で署名したJWTの生成"""
 class Jwt:
+    """"Jwtクラスの変数は基本外部から書き換えられない"""
     #これmainの方とpathはまとめたほうがよさそう。
     upload_private_key_path = './aws/s3/upload_file/assertion_private_key.json'
     upload_kid_path = './aws/s3/upload_file/kid.txt'
 
-    #private_keyもkidもupload_fileにあるものとする
+    #private_keyもkidもupload_fileにあるなら読み込む
     def __init__(self):
         if os.path.isfile(Jwt.upload_private_key_path):
-            self.__private_key = self.file_load(Jwt.upload_private_key_path)
-            self.__kid = self.file_load(Jwt.upload_kid_path)
+            self.__private_key = self.__file_load(Jwt.upload_private_key_path)
+            self.__kid = self.__file_load(Jwt.upload_kid_path)
         else:
             self.__private_key = ""
             self.__kid = ""
@@ -35,12 +36,12 @@ class Jwt:
             key = jwk.JWK.generate(kty='RSA', alg='RS256', use='sig', size=2048)
 
             self.__private_key = key.export_private()
-            self.create_file(Jwt.upload_private_key_path)
+            self.__create_file(Jwt.upload_private_key_path)
             
             public_key = key.export_public()
             print(public_key)
             self.__kid = input('公開鍵をLineDeveloper登録してkidを入力してください\n')
-            self.create_file(Jwt.upload_kid_path)
+            self.__create_file(Jwt.upload_kid_path)
             
             return True
         else:
@@ -67,14 +68,14 @@ class Jwt:
         return JWT
 
     """"モジュールにした方がよさそう -> class_access_token.pyでも使ってるから"""   
-    def create_file(self, upload_path):
+    def __create_file(self, upload_path):
             with open(upload_path, 'w+') as f:
                 if upload_path == Jwt.upload_private_key_path:
                     json.dump(json.loads(self.__private_key), f, indent=2)    
                 else:    
-                    f.write(self.__kid)
+                   f.write(self.__kid)
 
-    def file_load(self, download_path):
+    def __file_load(self, download_path):
             with open(download_path, 'r') as f:
                 return f.read()
 

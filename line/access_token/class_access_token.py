@@ -4,11 +4,19 @@ import json
 
 class AccessToken:
     upload_path = './aws/s3/upload_file/access_token.txt'
-    __access_token = ""
+    def __init__(self):
+        self.__token = ""
 
-    #setter
-    def set(self, access_token):
-        self.__access_token = access_token
+    @property
+    def token(self):
+        return self.__token
+    
+    @token.setter
+    def token(self, token):
+        if isinstance(token, str):
+            self.__token = token
+        else:
+            raise ValueError('正しい値を入れてください')
 
 
     #アクセストークン作成
@@ -23,11 +31,10 @@ class AccessToken:
             'client_assertion': JWT
         }
         res = requests.post(url, params=body, headers=headers)
-        #ここから、access_token取り出すか、ファイルに全部保存してS3に保存するか
         object = res.json()
-        self.__access_token = object['access_token']
+        self.__token = object['access_token']
         
-        self.create_file()
+        self.__create_file()
         return True
 
     #アクセストークンの有効性の確認
@@ -37,9 +44,9 @@ class AccessToken:
     #def revoke(self):
 
         
-    def create_file(self):
+    def __create_file(self):
             with open(AccessToken.upload_path, 'w+') as f:
-                f.write(self.__access_token)
+                f.write(self.__token)
 
     #MEMO:
     #S3からアクセストークンを読み取る。

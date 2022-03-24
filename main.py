@@ -46,8 +46,9 @@ def main(access_token, jwt, s3):
             sys.exit(1)
 
     else:
+    #2回目以降の処理    
         #まずはアクセストークンを取得する
-        access_token.set(download_file(upload_access_token_path))
+        access_token.token = download_file(upload_access_token_path)
         
         
         #2回目以降なのでアクセストークンの有効性を見る
