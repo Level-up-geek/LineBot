@@ -1,11 +1,13 @@
+from file_operation import FileOperation
+
 import urllib.parse
 import requests
 import json
 
 class AccessToken:
-    upload_path = './aws/s3/upload_file/access_token.txt'
+    
     def __init__(self):
-        self.__token = ""
+        self.__token = {}
 
     @property
     def token(self):
@@ -13,14 +15,18 @@ class AccessToken:
     
     @token.setter
     def token(self, token):
-        if isinstance(token, str):
+        if type(token) is dict:
             self.__token = token
         else:
             raise ValueError('正しい値を入れてください')
 
 
     #アクセストークン作成
-    def create(self, JWT):
+    def create(self, JWT, recreated_flag):
+        #古いトークンを削除する時に使うので残しておく。
+        if recreated_flag:
+            FileOperation.create_file(FileOperation.upload_old_access_token_path, self.__token)
+
         url = 'https://api.line.me/oauth2/v2.1/token'
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -30,23 +36,53 @@ class AccessToken:
             'client_assertion_type': 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
             'client_assertion': JWT
         }
-        res = requests.post(url, params=body, headers=headers)
-        object = res.json()
-        self.__token = object['access_token']
         
-        self.__create_file()
+        res = requests.post(url, params=body, headers=headers)
+
+        self.__token = res.json()
+        print(self.__token)
+        FileOperation.create_file(FileOperation.upload_access_token_path, self.__token)
+        
         return True
 
     #アクセストークンの有効性の確認
-    #def verify(self):
+    def verify(self):
+        url = 'https://api.line.me/oauth2/v2.1/verify'
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        body = {
+            'access_token': self.__token['access_token']
+        }
+
+        res = requests.get(url, params=body, headers=headers)
+        if res.status_code == 200:
+            return self.__check_expires(res.json())
+        else:
+            #主にエラーの時
+            print(res.jso())
+            return False
+
 
     #不要になったアクセストークン削除
     #def revoke(self):
+    
+    #アクセストークンが有効期限内かどうか
+    def __check_expires(self, verify_object):
+        import datetime
+        pass_time = datetime.datetime.fromtimestamp(verify_object['expires_in'])
 
+        if pass_time.day < 3:
+            print('有効期限切れ間近です。\n以下のURLにアクセスして入力作業してください\nhttps://github.com/Level-up-geek/LineBot/actions\n')
+            if input('再発行しますか？\n再発行する場合はyesと入力してください\n') == 'yes':
+                return False
         
-    def __create_file(self):
-            with open(AccessToken.upload_path, 'w+') as f:
-                f.write(self.__token)
+        print(f'有効期限は残り{pass_time.day}日です。このアクセストークンは有効です。\n')
+        return True
+    #どうやって、GitHubActionsから入力待ちになった時にslackへ知らせるか、、
+    #有効期限を毎日知らせて近づいてきたらGithubActionsに飛ぶようにするしかないか？
+    #pythonコードでprintされたものはecho $(python a.py) >> text.txtとすると
+    #すべての出力された文字列がそのままtext.txtに入っている
 
     #MEMO:
     #S3からアクセストークンを読み取る。

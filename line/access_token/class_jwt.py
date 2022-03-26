@@ -3,50 +3,52 @@ from turtle import Turtle
 from jwcrypto import jwk
 import jwt
 from jwt.algorithms import RSAAlgorithm
+
+from file_operation import FileOperation
+
 from dotenv import load_dotenv
 load_dotenv()
-import time
-import json
-import os
+
+import os, sys, time
 
 """公開鍵と秘密鍵の生成 and 秘密鍵で署名したJWTの生成"""
 class Jwt:
     """"Jwtクラスの変数は基本外部から書き換えられない"""
-    #これmainの方とpathはまとめたほうがよさそう。
-    upload_private_key_path = './aws/s3/upload_file/assertion_private_key.json'
-    upload_kid_path = './aws/s3/upload_file/kid.txt'
 
     #private_keyもkidもupload_fileにあるなら読み込む
     def __init__(self):
-        if os.path.isfile(Jwt.upload_private_key_path):
-            self.__private_key = self.__file_load(Jwt.upload_private_key_path)
-            self.__kid = self.__file_load(Jwt.upload_kid_path)
+        if os.path.isfile(FileOperation.upload_private_key_path) and os.path.isfile(FileOperation.upload_kid_path):
+            self.__private_key = FileOperation.load_file(FileOperation.upload_private_key_path)
+            self.__kid = FileOperation.load_file(FileOperation.upload_kid_path)
         else:
-            self.__private_key = ""
-            self.__kid = ""
-            pass
+            self.__private_key = ''
+            self.__kid = ''
+            
     
     """
-    基本は実行されることはない
-    再発行の時は必要かも？
+    再発行の時やアクセストークンがS3から取得できなかったとき
     """
-    def create_assertion_key(self):
-        if  not os.path.isfile(Jwt.upload_private_key_path):
-            #Lineの規約に沿って
-            key = jwk.JWK.generate(kty='RSA', alg='RS256', use='sig', size=2048)
+    def create_assertion_key(self, recreated_flag):
+        #既に作成済みなら終了
+        if os.path.isfile(FileOperation.upload_access_token_path):
+            if recreated_flag:
+                print('再発行を開始します\n')
+            else:
+                sys.exit(1)
+        
+        #Lineの規約に沿って
+        key = jwk.JWK.generate(kty='RSA', alg='RS256', use='sig', size=2048)
 
-            self.__private_key = key.export_private()
-            self.__create_file(Jwt.upload_private_key_path)
+        self.__private_key = key.export_private()
+        FileOperation.create_file(FileOperation.upload_private_key_path, self.__private_key)
             
-            public_key = key.export_public()
-            print(public_key)
-            self.__kid = input('公開鍵をLineDeveloper登録してkidを入力してください\n')
-            self.__create_file(Jwt.upload_kid_path)
+        public_key = key.export_public()
+        print(public_key)
+        self.__kid = input('公開鍵をLineDeveloper登録してkidを入力してください\n')
+        FileOperation.create_file(FileOperation.upload_kid_path, self.__kid)
             
-            return True
-        else:
-            return False
-
+        return True
+        
     def create(self):
         headers = {
             'alg': 'RS256',
@@ -66,16 +68,3 @@ class Jwt:
 
         JWT = jwt.encode(payload, key, algorithm='RS256', headers=headers, json_encoder=None)
         return JWT
-
-    """"モジュールにした方がよさそう -> class_access_token.pyでも使ってるから"""   
-    def __create_file(self, upload_path):
-            with open(upload_path, 'w+') as f:
-                if upload_path == Jwt.upload_private_key_path:
-                    json.dump(json.loads(self.__private_key), f, indent=2)    
-                else:    
-                   f.write(self.__kid)
-
-    def __file_load(self, download_path):
-            with open(download_path, 'r') as f:
-                return f.read()
-

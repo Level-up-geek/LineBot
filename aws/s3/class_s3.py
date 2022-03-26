@@ -23,7 +23,7 @@ class S3:
             file_name = os.path.basename(object_name)
 
         try:
-            response = S3.client.download_file(bucket_name, object_name, file_name)
+            response = S3.client.s3_client.download_file(bucket_name, object_name, file_name)
         except ClientError as e:
             logging.error(e)
             return False
