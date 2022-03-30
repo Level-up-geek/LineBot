@@ -4,7 +4,7 @@ from jwcrypto import jwk
 import jwt
 from jwt.algorithms import RSAAlgorithm
 
-from file_operation import FileOperation
+from module.file_operation import FileOperation
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -44,6 +44,9 @@ class Jwt:
             
         public_key = key.export_public()
         print(public_key)
+
+        #kidだけ他のメソッドに切り離す
+        #access_token-workflowでkidに値代入からやりたいから
         self.__kid = input('公開鍵をLineDeveloper登録してkidを入力してください\n')
         FileOperation.create_file(FileOperation.upload_kid_path, self.__kid)
             

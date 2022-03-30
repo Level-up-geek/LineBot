@@ -25,6 +25,7 @@ pytz==2022.1
 requests==2.27.1
 s3transfer==0.5.2
 six==1.16.0
+slack-sdk==3.15.2
 urllib3==1.26.9
 wrapt==1.14.0
 yarl==1.7.2

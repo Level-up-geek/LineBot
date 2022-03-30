@@ -1,4 +1,4 @@
-from file_operation import FileOperation
+from module.file_operation import FileOperation
 
 import urllib.parse
 import requests
@@ -8,6 +8,7 @@ class AccessToken:
     
     def __init__(self):
         self.__token = {}
+        self.__message = ''
 
     @property
     def token(self):
@@ -19,6 +20,11 @@ class AccessToken:
             self.__token = token
         else:
             raise ValueError('正しい値を入れてください')
+
+    @property
+    def slack_message(self):
+        print(self.__message)
+        return self.__message
 
 
     #アクセストークン作成
@@ -38,12 +44,14 @@ class AccessToken:
         }
         
         res = requests.post(url, params=body, headers=headers)
-
-        self.__token = res.json()
-        print(self.__token)
-        FileOperation.create_file(FileOperation.upload_access_token_path, self.__token)
         
-        return True
+        if res.status_code == 200:
+            self.__token = res.json()
+            FileOperation.create_file(FileOperation.upload_access_token_path, self.__token)            
+            return True
+        else:
+            res.raise_for_status()
+            return False
 
     #アクセストークンの有効性の確認
     def verify(self):
@@ -56,11 +64,15 @@ class AccessToken:
         }
 
         res = requests.get(url, params=body, headers=headers)
+
         if res.status_code == 200:
+            #slackへ送るメッセージどこで定義するか、、
+            #slackへ送るsend_messageメソッドをどこで使うか。
+            #verifyメソッドの戻り値はtrue, falseがいいけどなあ 
             return self.__check_expires(res.json())
         else:
             #主にエラーの時
-            print(res.jso())
+            print(res.json())
             return False
 
 
@@ -73,16 +85,16 @@ class AccessToken:
         pass_time = datetime.datetime.fromtimestamp(verify_object['expires_in'])
 
         if pass_time.day < 3:
-            print('有効期限切れ間近です。\n以下のURLにアクセスして入力作業してください\nhttps://github.com/Level-up-geek/LineBot/actions\n')
-            if input('再発行しますか？\n再発行する場合はyesと入力してください\n') == 'yes':
-                return False
+            #slackにactionsのurlを通知して更新作業を開始させる。
+            # slack webhook url: https://hooks.slack.com/services/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
+            #https://github.com/Level-up-geek/LineBot/actions/runs/{github.run_id}
+            #github.run_idはpython main.py ${{github.run_id}}で渡す。
+            #slackクラスはこのメソッドの中だけで使うよう、このメソッドの中でimportする
+            self.__message = 'アクセストークンの有効期限が近づいています。\n再発行してください。'
+            return False
         
-        print(f'有効期限は残り{pass_time.day}日です。このアクセストークンは有効です。\n')
+        self.__message = f'有効期限は残り{pass_time.day}日です。このアクセストークンは有効です。\n'
         return True
-    #どうやって、GitHubActionsから入力待ちになった時にslackへ知らせるか、、
-    #有効期限を毎日知らせて近づいてきたらGithubActionsに飛ぶようにするしかないか？
-    #pythonコードでprintされたものはecho $(python a.py) >> text.txtとすると
-    #すべての出力された文字列がそのままtext.txtに入っている
 
     #MEMO:
     #S3からアクセストークンを読み取る。

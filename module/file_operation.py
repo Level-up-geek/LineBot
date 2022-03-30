@@ -15,7 +15,7 @@ class FileOperation:
     access_token_file_name = 'access_token.json'
 
     @classmethod
-    def create_file(self, upload_path, object):
+    def create_file(cls, upload_path, object):
         with open(upload_path, 'w+') as f:
             if '.json' == os.path.splitext(upload_path)[1]:
                 #res.json()でdict型になっている
@@ -25,11 +25,9 @@ class FileOperation:
                     json.dump(json.loads(object), f, indent=2)    
             else:    
                 f.write(object)
-#dumpはdictの中身がint, strなど型が決まっている。
-#''でもだめ。""じゃないといけない。
 
     @classmethod
-    def load_file(self, load_path):
+    def load_file(cls, load_path):
         with open(load_path, 'r') as f:
             if '.json' == os.path.splitext(load_path)[1]:
                 return json.loads(f.read())
