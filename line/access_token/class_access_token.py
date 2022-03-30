@@ -1,13 +1,14 @@
 from module.file_operation import FileOperation
+from dotenv import load_dotenv
+load_dotenv()
 
-import urllib.parse
-import requests
-import json
+import urllib.parse,  requests, json, os
 
 class AccessToken:
     
     def __init__(self):
         self.__token = {}
+        self.__old_token = {}
         self.__message = ''
 
     @property
@@ -22,9 +23,22 @@ class AccessToken:
             raise ValueError('正しい値を入れてください')
 
     @property
+    def old_token(self):
+        return self.__old_token
+    
+    @old_token.setter
+    def old_token(self, old_token):
+        if type(old_token) is dict:
+            self.__old_token = old_token
+        else:
+            raise ValueError('正しい値を入れてください')
+
+    @property
     def slack_message(self):
         print(self.__message)
         return self.__message
+    
+    
 
 
     #アクセストークン作成
@@ -77,7 +91,20 @@ class AccessToken:
 
 
     #不要になったアクセストークン削除
-    #def revoke(self):
+    def revoke(self):
+        url = 'https://api.line.me/oauth2/v2.1/revoke'
+        body = {
+            'client_id': os.getenv('LINE_CHANEL_ID'),
+            'client_secret': os.getenv('LINE_CHANEL_SECRET'),
+            'access_token': self.__old_token['access_token']
+        }
+        
+        res = requests.post(url, data=body)
+
+        if res.status_code == 200:
+            print('トークンの削除に成功しました。')
+        else:
+            print(res.json())
     
     #アクセストークンが有効期限内かどうか
     def __check_expires(self, verify_object):

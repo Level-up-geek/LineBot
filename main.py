@@ -1,5 +1,5 @@
 from importlib.resources import path
-from os import getenv
+from os import access, getenv
 
 from line.access_token.class_jwt import Jwt
 from line.access_token.class_access_token import AccessToken
@@ -9,6 +9,7 @@ from module.file_operation import FileOperation
 
 from dotenv import load_dotenv
 load_dotenv()
+
 import sys, os
 
 """
@@ -30,22 +31,26 @@ def main(access_token, jwt, s3, slack, local_flag):
     if not os.path.isfile(FileOperation.upload_access_token_path):
     #アクセストークンをダウロード出来なかったとき用
         create_access_token_flow(access_token, jwt, s3, recreated_flag=False)
-    else:
-    #2回目以降の処理
-        #まずはアクセストークンを取得する
-        access_token.token = FileOperation.load_file(FileOperation.upload_access_token_path)
-        #アクセストークンが有効かどうか
-        verify = access_token.verify()
-        if local_flag:
-            if not verify:
+    
+    #まずはアクセストークンを取得する
+    access_token.token = FileOperation.load_file(FileOperation.upload_access_token_path)
+    #アクセストークンが有効かどうか
+    verify = access_token.verify()
+    
+    #local環境での実行の時
+    if local_flag:
+        if verify:
+            if input('アクセストークンの再発行を開始します。よろしいですか？\nyes/no\n') == 'yes':
                 create_access_token_flow(access_token, jwt, s3, recreated_flag=True)
-            #ここから、古いアクセストークンをrevokeしに行く。
-            # Lineのsecretとidが必要
-            # status codeが200だったらold_access_tokenファイルも削除する。
-        else:
-            #GitHub上からslackへ通知してくれる
-            res = slack.send_message(access_token.slack_message)
-            print(f'status: {res.status_code} body: {res.body}')
+            
+            if input('古くなったアクセストークンを削除します。いいですか?\nyes/no\n') == 'yes':
+                access_token.old_token = FileOperation.load_file(FileOperation.upload_old_access_token_path)
+                access_token.revoke()
+    #GitHub上での実行の時
+    else:
+        #GitHub上からslackへ通知してくれる
+        res = slack.send_message(access_token.slack_message)
+        print(f'status: {res.status_code} body: {res.body}')
         
         
     #boto3は.aws/configureにアクセスのための秘匿情報を入れる必要があることに注意

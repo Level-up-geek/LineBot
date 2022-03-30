@@ -14,6 +14,7 @@ class FileOperation:
     kid_file_name = 'kid.txt'
     access_token_file_name = 'access_token.json'
 
+    """"ファイルの読み込み書き込みは例外が発生した時の処理書きたいね"""
     @classmethod
     def create_file(cls, upload_path, object):
         with open(upload_path, 'w+') as f:
