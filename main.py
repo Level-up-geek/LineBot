@@ -49,15 +49,9 @@ def main(access_token, jwt, s3, slack, local_flag):
     #GitHub上での実行の時
     else:
         #GitHub上からslackへ通知してくれる
-        res = slack.send_message(access_token.slack_message)
-        print(f'status: {res.status_code} body: {res.body}')
-        
+        slack.send_message(access_token.slack_message)
         
     #boto3は.aws/configureにアクセスのための秘匿情報を入れる必要があることに注意
-        
-#再発行は、1から作り直しカモ、リフレッシュトークンないし。
-#秘密鍵から作るかぁ。。
-#recreate_flag=Trueならjwt.create_assertion_keyを実行するようにするか。
 
 def create_access_token_flow(access_token, jwt, s3, recreated_flag=False):
         jwt.create_assertion_key(recreated_flag)
@@ -94,6 +88,6 @@ if __name__ == '__main__':
     s3 = S3()
     webhook_url = os.getenv('SLACK_WEBHOOK_URL')
     slack = Slack(webhook_url)
-    #コマンドライン引数が整数かどうか
+    #コマンドライン引数でlocal環境かGitHub環境か判定
     local_flag = check_argv(sys.argv[1])
     main(access_token, jwt, s3, slack, local_flag)

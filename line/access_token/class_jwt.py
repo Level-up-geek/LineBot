@@ -24,7 +24,6 @@ class Jwt:
             self.__private_key = ''
             self.__kid = ''
             
-    
     """
     再発行の時やアクセストークンがS3から取得できなかったとき
     """

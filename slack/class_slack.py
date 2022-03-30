@@ -7,7 +7,11 @@ class Slack:
         self.__webhook = WebhookClient(webhook_url)
 
     def send_message(self, message):
-        response = self.__webhook.send(text=message)
-        return response
+        res = self.__webhook.send(text=message)
+        print(f'status: {res.status_code} body: {res.body}')
+        if res.status == 200:
+            return True
+        else:
+            return False
 
     
