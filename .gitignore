@@ -1,3 +1,7 @@
 venv
 packages
 dst.zip
+
+aws/s3/upload_file
+.env
+memo.txt
