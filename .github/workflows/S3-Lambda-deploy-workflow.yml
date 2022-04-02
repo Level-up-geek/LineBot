@@ -34,13 +34,12 @@ jobs:
 
       #すぐ消す。    
        - name: check-access_tokn
-         run: echo ${{ toJSON(steps.download-access_token.outputs.s3-object) }} | jq -r -R  'fromjson? | .access_token'
+         run: echo ::set-env name=ACCESS_TOKEN::$(echo ${{ toJSON(steps.download-access_token.outputs.s3-object) }} | jq -r -R  'fromjson? | .access_token')
 
        - name: create env and write secret information
          run: | 
           New-Item .env
-          echo ${{ secrets.LINE_ACCESS_KEY }} > .env
-          cat .env
+          echo $ACCESS_TOKEN > .env
 
        - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
