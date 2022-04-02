@@ -4,6 +4,8 @@ inputs:
   s3-object:
     description: 'ダウロードするオブジェクト名'
     required: true
+#このアクションの標準出力。
+#ログみたいなところに出力されるー＞なぞにアクセストークンは非表示になっていた。
 outputs:
   s3-object:
     description: '最終的に取得した値'

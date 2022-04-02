@@ -25,15 +25,16 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
-        
-       - id: get-access_token
+       
+       - name: download-access_token
+         id: download-access_token
          uses: ./.github/actions/download-s3-object
          with:
           s3-object: 'access_token.json'
 
       #すぐ消す。    
        - name: check-access_tokn
-         run: echo s3-object ${{ steps.get-access_token.outputs.s3-object }} | jq '.access_token'
+         run: echo ${{ steps.download-access_token.outputs.s3-object }} | jq '.access_token'
 
        - name: create env and write secret information
          run: | 
