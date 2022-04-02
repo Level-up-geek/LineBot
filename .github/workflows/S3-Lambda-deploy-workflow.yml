@@ -34,7 +34,7 @@ jobs:
 
       #すぐ消す。    
        - name: check-access_tokn
-         run: echo '${{ toJSON(steps.download-access_token.outputs.s3-object) }}' | jq '.access_token'
+         run: echo ${{ toJSON(steps.download-access_token.outputs.s3-object) }} | jq '.access_token'
 
        - name: create env and write secret information
          run: | 
