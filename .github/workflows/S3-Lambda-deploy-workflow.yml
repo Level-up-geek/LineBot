@@ -19,6 +19,23 @@ jobs:
        - name: Checkout
          uses: actions/checkout@v3
 
+       - name: Configure AWS Credentials
+         uses: aws-actions/configure-aws-credentials@v1
+         with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+        
+       - id: get-access_token
+         uses: ./.github/actions/download-s3-object
+         with:
+          s3-object: 'access_token.json'
+          object-key: '.access_token'
+
+      #すぐ消す。    
+       - name: check-access_tokn
+         run: echo s3-object-value ${{ steps.get-access_token.outputs.s3-object-value }}
+
        - name: create env and write secret information
          run: | 
           New-Item .env
