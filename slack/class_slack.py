@@ -1,4 +1,4 @@
-import os
+import sys
 from xmlrpc.client import ResponseError
 from slack_sdk.webhook import WebhookClient
 
@@ -9,9 +9,7 @@ class Slack:
     def send_message(self, message):
         res = self.__webhook.send(text=message)
         print(f'status: {res.status_code} body: {res.body}')
-        if res.status == 200:
-            return True
-        else:
-            return False
+        if not res.status_code == 200:
+            sys.exit(1)
 
     

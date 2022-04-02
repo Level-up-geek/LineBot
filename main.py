@@ -39,13 +39,14 @@ def main(access_token, jwt, s3, slack, local_flag):
     
     #local環境での実行の時
     if local_flag:
-        if verify:
+        if not verify:
             if input('アクセストークンの再発行を開始します。よろしいですか？\nyes/no\n') == 'yes':
                 create_access_token_flow(access_token, jwt, s3, recreated_flag=True)
             
             if input('古くなったアクセストークンを削除します。いいですか?\nyes/no\n') == 'yes':
                 access_token.old_token = FileOperation.load_file(FileOperation.upload_old_access_token_path)
                 access_token.revoke()
+
     #GitHub上での実行の時
     else:
         #GitHub上からslackへ通知してくれる
@@ -71,6 +72,7 @@ def create_access_token_flow(access_token, jwt, s3, recreated_flag=False):
 
         if not s3.upload_file(FileOperation.upload_access_token_path, bucket_name, FileOperation.access_token_file_name):
             sys.exit(1)
+        print('アクセストークンのs3へのアップロードが出来ました。')
 
 def check_argv(local_flag):
     if local_flag.isdigit():
@@ -90,4 +92,5 @@ if __name__ == '__main__':
     slack = Slack(webhook_url)
     #コマンドライン引数でlocal環境かGitHub環境か判定
     local_flag = check_argv(sys.argv[1])
+    #コマンドライン引数で特定のアクセストークンを消す処理が実行できるように(アクセストークンを渡す)
     main(access_token, jwt, s3, slack, local_flag)
