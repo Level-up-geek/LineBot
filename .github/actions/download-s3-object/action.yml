@@ -4,6 +4,9 @@ inputs:
   s3-object:
     description: 'ダウロードするオブジェクト名'
     required: true
+  key:
+    description: 'ファイルがjsonの時必要なキー'
+    required: false
 #このアクションの標準出力。
 #ログみたいなところに出力されるー＞なぞにアクセストークンは非表示になっていた。
 outputs:
@@ -20,5 +23,5 @@ runs:
     - id: download-s3-object
       run: |
         access_token=$(cat ./access_token.josn | tr -d '\n')
-        echo "::set-output name=s3-object::$(echo $access_token | jq -r -R 'fromjson? | .access_token')"
+        echo "::set-output name=s3-object::$(echo $access_token | jq -r -R 'fromjson? | ${{ inputs.key }}')"
       shell: bash
