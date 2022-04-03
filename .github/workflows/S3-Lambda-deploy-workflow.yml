@@ -31,13 +31,10 @@ jobs:
          uses: ./.github/actions/download-s3-object
          with:
           s3-object: 'access_token.json'
-   
-       - name: set-access_token
-         run: echo ::set-env name=ACCESS_TOKEN::$(echo ${{ fromJSON(steps.download-access_token.outputs.s3-object) }} | jq -r '.access_token')
-
+  
        - name: create env and write secret information
          run: | 
-          echo "access_token: ${{ steps.download-access_token.outputs.s3-object }}"
+          ACCESS_TOKEN=echo ${{ steps.download-access_token.outputs.s3-object }}
           New-Item .env
           echo "ACCESS_TOKEN=$ACCESS_TOKEN" > .env
           echo "LINE_SECRET_KEY=${{ secrets.LINE_SECRET_KEY }}" >> .env
