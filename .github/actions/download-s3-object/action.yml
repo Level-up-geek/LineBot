@@ -9,7 +9,7 @@ inputs:
 outputs:
   s3-object:
     description: '最終的に取得した値'
-    value: ${{ steps.download-s3-object.outputs.s3-object}}
+    value: ${{ steps.download-s3-object.outputs.s3-object }}
 
 runs:
   using: 'composite'
@@ -18,5 +18,8 @@ runs:
     - run: aws s3 cp s3://levelupgeek/${{ inputs.s3-object }} ./access_token.josn
       shell: bash
     - id: download-s3-object
-      run: echo "::set-output name=s3-object::$(cat ./access_token.josn)"
+      run: |
+        access_token_alt = $(cat ./access_token.josn)
+        access_token = "${access_token_alt//$'\n'/\\n}"
+        echo "::set-output name=s3-object::$access_token"
       shell: bash
