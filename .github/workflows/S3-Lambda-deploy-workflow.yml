@@ -37,8 +37,10 @@ jobs:
 
        - name: create env and write secret information
          run: | 
+          echo "access_token: ${{ steps.download-access_token.outputs.s3-object }}"
           New-Item .env
-          echo $ACCESS_TOKEN > .env
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" > .env
+          echo "LINE_SECRET_KEY=${{ secrets.LINE_SECRET_KEY }}" >> .env
 
        - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
