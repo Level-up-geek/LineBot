@@ -1,0 +1,27 @@
+name: 'download-access_token'
+description: 'S3からアクセストークンを取得してGitHubのSecretを更新する'
+inputs:
+  s3-object:
+    description: 'ダウロードするオブジェクト名'
+    required: true
+  key:
+    description: 'ファイルがjsonの時必要なキー'
+    required: false
+#このアクションの標準出力。
+#ログみたいなところに出力されるー＞なぞにアクセストークンは非表示になっていた。
+outputs:
+  s3-object:
+    description: '最終的に取得した値'
+    value: ${{ steps.download-s3-object.outputs.s3-object }}
+
+runs:
+  using: 'composite'
+  steps:
+  #shellを入れないとエラーになってしまう。
+    - run: aws s3 cp s3://levelupgeek/${{ inputs.s3-object }} ./access_token.josn
+      shell: bash
+    - id: download-s3-object
+      run: |
+        downloaded_access_token=$(cat ./access_token.josn | tr -d '\n')
+        echo "::set-output name=s3-object::$(echo $downloaded_access_token | jq -r -R 'fromjson? | ${{ inputs.key }}')"
+      shell: bash

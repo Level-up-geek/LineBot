@@ -19,15 +19,29 @@ jobs:
        - name: Checkout
          uses: actions/checkout@v3
 
+       - name: Configure AWS Credentials
+         uses: aws-actions/configure-aws-credentials@v1
+         with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+       
+       - name: download-access_token
+         id: download-access_token
+         uses: ./.github/actions/download-s3-object
+         with:
+          s3-object: 'access_token.json'
+          key: '.access_token'
+
        - name: create env and write secret information
-         run: | 
+         run: |
           New-Item .env
-          echo ${{ secrets.LINE_ACCESS_KEY }} >> .env
+          echo "ACCESS_TOKEN=${{ steps.download-access_token.outputs.s3-object }}" > .env
+          echo "LINE_SECRET_KEY=${{ secrets.LINE_SECRET_KEY }}" >> .env
 
        - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
           mkdir packages
-          pip install -r ./requirements.txt -t ./packages/
           cp lambda_function.py packages/
           cp .env packages/
           compress-archive packages/* lambda_function
