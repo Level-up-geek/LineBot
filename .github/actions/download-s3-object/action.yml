@@ -19,7 +19,7 @@ runs:
       shell: bash
     - id: download-s3-object
       run: |
-        access_token_alt = $(cat ./access_token.josn)
-        access_token = "${access_token_alt//$'\n'/\\n}"
+        access_token_alt=$(cat ./access_token.josn)
+        access_token="${access_token_alt//$'\n'/\\n}"
         echo "::set-output name=s3-object::$access_token"
       shell: bash
