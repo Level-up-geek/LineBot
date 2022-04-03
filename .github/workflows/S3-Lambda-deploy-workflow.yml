@@ -31,9 +31,8 @@ jobs:
          uses: ./.github/actions/download-s3-object
          with:
           s3-object: 'access_token.json'
-
-      #すぐ消す。    
-       - name: check-access_tokn
+   
+       - name: set-access_token
          run: echo ::set-env name=ACCESS_TOKEN::$(echo ${{ toJSON(steps.download-access_token.outputs.s3-object) }} | jq -r -R  'fromjson? | .access_token')
 
        - name: create env and write secret information
@@ -44,7 +43,7 @@ jobs:
        - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
           mkdir packages
-          pip install -r ./requirements.txt -t ./packages/
+          pip install -r ./requirements/prod.txt -t ./packages/
           cp lambda_function.py packages/
           cp .env packages/
           compress-archive packages/* lambda_function
