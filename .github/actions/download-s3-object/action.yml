@@ -18,8 +18,5 @@ runs:
     - run: aws s3 cp s3://levelupgeek/${{ inputs.s3-object }} ./access_token.josn
       shell: bash
     - id: download-s3-object
-      run: |
-        access_token_alt=$(cat ./access_token.josn)
-        access_token="${access_token_alt//$'\n'/\\n}"
-        echo "::set-output name=s3-object::$access_token"
+      run: echo "::set-output name=s3-object::$(cat ./access_token.josn | tr -d '\n')"
       shell: bash
