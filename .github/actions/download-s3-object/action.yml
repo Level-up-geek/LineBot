@@ -22,6 +22,6 @@ runs:
       shell: bash
     - id: download-s3-object
       run: |
-        access_token=$(cat ./access_token.josn | tr -d '\n')
-        echo "::set-output name=s3-object::$(echo $access_token | jq -r -R 'fromjson? | ${{ inputs.key }}')"
+        downloaded_access_token=$(cat ./access_token.josn | tr -d '\n')
+        echo "::set-output name=s3-object::$(echo $downloaded_access_token | jq -r -R 'fromjson? | ${{ inputs.key }}')"
       shell: bash
