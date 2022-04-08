@@ -39,8 +39,9 @@ class FileOperation:
                 return f.read()
 
     #アップロードパスのファイルが存在していなければ空で作る。
+    #本当はこれらの関数をインスタンスメソッドにした方がいいんだけどね。initでcheckした方がいい。。
     @classmethod
-    def check_exist(path):
+    def check_exist(cls, path):
         if not os.path.isfile(path):
             with open(path, 'w') as f:
                 f.write('')
