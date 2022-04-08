@@ -1,3 +1,4 @@
+from distutils.command.upload import upload
 from dotenv import load_dotenv
 load_dotenv()
 import os
@@ -9,7 +10,7 @@ class FileOperation:
     upload_kid_path = './aws/s3/upload_file/kid.txt'
     upload_access_token_path = './aws/s3/upload_file/access_token.json'
     upload_old_access_token_path = './aws/s3/upload_file/old_access_token.json'
-        
+    
     private_key_file_name = 'assertion_private_key.json'
     kid_file_name = 'kid.txt'
     access_token_file_name = 'access_token.json'
@@ -17,6 +18,7 @@ class FileOperation:
     """"ファイルの読み込み書き込みは例外が発生した時の処理書きたいね"""
     @classmethod
     def create_file(cls, upload_path, object):
+        cls.check_exist(upload_path)
         with open(upload_path, 'w+') as f:
             if '.json' == os.path.splitext(upload_path)[1]:
                 #res.json()でdict型になっている
@@ -29,8 +31,16 @@ class FileOperation:
 
     @classmethod
     def load_file(cls, load_path):
+        cls.check_exist(load_path)
         with open(load_path, 'r') as f:
             if '.json' == os.path.splitext(load_path)[1]:
                 return json.loads(f.read())
             else:
                 return f.read()
+
+    #アップロードパスのファイルが存在していなければ空で作る。
+    @classmethod
+    def check_exist(path):
+        if not os.path.isfile(path):
+            with open(path, 'w') as f:
+                f.write('')

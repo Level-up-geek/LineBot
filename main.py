@@ -1,4 +1,5 @@
 from importlib.resources import path
+from msilib.schema import File
 from os import access, getenv
 
 from line.access_token.class_jwt import Jwt
@@ -28,9 +29,12 @@ def main(access_token, jwt, s3, slack, local_flag):
     #まずは、S3からアクセストークン
     s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
     
-    if not os.path.isfile(FileOperation.upload_access_token_path):
+    if not os.path.isfile(FileOperation.upload_access_token_path) and local_flag:
     #アクセストークンをダウロード出来なかったとき用
         create_access_token_flow(access_token, jwt, s3, recreated_flag=False)
+    else:
+        print('アクセストークンをローカルで発行してください')
+        sys.exit(1)
     
     #まずはアクセストークンを取得する
     access_token.token = FileOperation.load_file(FileOperation.upload_access_token_path)
