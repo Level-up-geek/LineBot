@@ -26,7 +26,7 @@ jobs:
           python-version: 3.9
       
       - name: create .env for using bucket_name at boto3
-        run: echo "AWS_S3_BUCKET_NAME=${{ secret.AWS_S3_BUCKET_NAME }}" > .env
+        run: echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" > .env
       
       - name: install python package
         run: pip install -r ./requirements.txt
