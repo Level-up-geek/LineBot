@@ -34,6 +34,7 @@ class FileOperation:
         cls.check_exist(load_path)
         with open(load_path, 'r') as f:
             if '.json' == os.path.splitext(load_path)[1]:
+                print(f.read())
                 return json.loads(f.read())
             else:
                 return f.read()
