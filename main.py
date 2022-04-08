@@ -45,15 +45,8 @@ def main(access_token, jwt, s3, slack, local_flag):
             
             if input('古くなったアクセストークンを削除します。いいですか?\nyes/no\n') == 'yes':
                 access_token.old_token = FileOperation.load_file(FileOperation.upload_old_access_token_path)
-                access_token.revoke()
-
-    #GitHub上での実行の時
-    else:
-        #GitHub上からslackへ通知してくれる
-        slack.send_message(access_token.slack_message)
-        
-    #boto3は.aws/configureにアクセスのための秘匿情報を入れる必要があることに注意
-
+                access_token.revoke()        
+    
 def create_access_token_flow(access_token, jwt, s3, recreated_flag=False):
         jwt.create_assertion_key(recreated_flag)
                 
@@ -86,11 +79,18 @@ def check_argv(local_flag):
 if __name__ == '__main__':
     #クラス間での連結度をできるだけ弱くしている
     access_token = AccessToken()
-    jwt = Jwt()
     s3 = S3()
     webhook_url = os.getenv('SLACK_WEBHOOK_URL')
     slack = Slack(webhook_url)
-    #コマンドライン引数でlocal環境かGitHub環境か判定
+    
     local_flag = check_argv(sys.argv[1])
+    
+    #git hub上で実行される場合(トークンの検証だけ行う)
+    if not local_flag:
+        access_token.verify()
+        slack.send_message(access_token.slack_message)
+        sys.exit(1)
+
+    jwt = Jwt()
     #コマンドライン引数で特定のアクセストークンを消す処理が実行できるように(アクセストークンを渡す)
     main(access_token, jwt, s3, slack, local_flag)
