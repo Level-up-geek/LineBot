@@ -25,7 +25,8 @@ bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
 
 def main(access_token, jwt, s3, slack, local_flag):
     #まずは、S3からアクセストークン
-    s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
+    if FileOperation.check_exist(FileOperation.upload_access_token_path):
+        s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
     
     #アクセストークンをダウロード出来なかったとき用
     if not os.path.isfile(FileOperation.upload_access_token_path):
