@@ -1,0 +1,30 @@
+name: verify
+
+on:
+  schedule:
+  #午前12時に更新する
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  verify-access-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout main
+        uses: actions/checkout@v3
+      
+      - name: set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+      
+      - name: verify access_token
+        run: python main.py 0
+    

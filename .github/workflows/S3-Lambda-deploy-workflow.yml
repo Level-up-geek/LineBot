@@ -28,7 +28,7 @@ jobs:
        
        - name: download-access_token
          id: download-access_token
-         uses: ./.github/actions/download-s3-object
+         uses: ./.github/actions/download-s3-object-action
          with:
           s3-object: 'access_token.json'
           key: '.access_token'
