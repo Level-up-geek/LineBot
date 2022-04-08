@@ -24,9 +24,11 @@ import sys, os
 bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
 
 def main(access_token, jwt, s3, slack, local_flag):
+    s3.upload_file(FileOperation.upload_access_token_path, bucket_name, FileOperation.access_token_file_name)
     #まずは、S3からアクセストークン
     if FileOperation.check_exist(FileOperation.upload_access_token_path):
-        s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
+        print(s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path))
+
     
     #アクセストークンをダウロード出来なかったとき用
     if not os.path.isfile(FileOperation.upload_access_token_path):
@@ -87,7 +89,7 @@ def check_argv(local_flag):
 if __name__ == '__main__':
     #クラス間での連結度をできるだけ弱くしている
     access_token = AccessToken()
-    s3 = S3()
+    s3 = S3('s3')
     webhook_url = os.getenv('SLACK_WEBHOOK_URL')
     slack = Slack(webhook_url)
     jwt = Jwt()

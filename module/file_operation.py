@@ -34,7 +34,11 @@ class FileOperation:
         cls.check_exist(load_path)
         with open(load_path, 'r') as f:
             if '.json' == os.path.splitext(load_path)[1]:
-                print(f.read())
+                #GitHub Actionsで表示されない
+                print(load_path)
+                if load_path == FileOperation.upload_access_token_path:
+                    import sys
+                    sys.exit(1)
                 return json.loads(f.read())
             else:
                 return f.read()
