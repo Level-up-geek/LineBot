@@ -43,8 +43,12 @@ class FileOperation:
     @classmethod
     def check_exist(cls, path):
         if not os.path.isfile(path):
+            file_path = os.path.dirname(path)
+            if not os.path.exists(file_path):
+                os.makedirs(file_path)
+            
             with open(path, 'w') as f:
                 f.write('')
             return False
-            
+
         return True
