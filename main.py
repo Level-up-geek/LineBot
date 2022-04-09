@@ -24,14 +24,14 @@ import sys, os
 bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
 
 def main(access_token, jwt, s3, slack, local_flag):
-    s3.upload_file(FileOperation.upload_access_token_path, bucket_name, FileOperation.access_token_file_name)
-    #まずは、S3からアクセストークン
-    if FileOperation.check_exist(FileOperation.upload_access_token_path):
-        print(s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path))
+    #アクセストークンを保存するパスが存在しているかー＞していなかったら作成
+    FileOperation.check_exist(FileOperation.upload_access_token_path)
+    
+    s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
 
     
-    #アクセストークンをダウロード出来なかったとき用
-    if not os.path.isfile(FileOperation.upload_access_token_path):
+    #アクセストークンをまだ発行したことがないとき用
+    if os.path.getsize(FileOperation.upload_access_token_path) == 0:
         if local_flag:
             create_access_token_flow(access_token, jwt, s3, recreated_flag=False)
         else:

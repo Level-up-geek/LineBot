@@ -4,6 +4,11 @@ load_dotenv()
 import os
 import json
 
+""""
+基本mainからしか使われない
+しかし、mainを簡略化するため
+このクラスはclass_s3で使われる。
+"""
 class FileOperation:
     
     upload_private_key_path = './aws/s3/upload_file/assertion_private_key.json'
@@ -34,12 +39,8 @@ class FileOperation:
         cls.check_exist(load_path)
         with open(load_path, 'r') as f:
             if '.json' == os.path.splitext(load_path)[1]:
-                #GitHub Actionsで表示されない
-                print(load_path)
                 if load_path == FileOperation.upload_access_token_path:
-                    import sys
-                    sys.exit(1)
-                return json.loads(f.read())
+                    return json.loads(f.read())
             else:
                 return f.read()
 
