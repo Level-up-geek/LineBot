@@ -1,4 +1,3 @@
-from importlib.resources import path
 from os import access, getenv
 
 from line.access_token.class_jwt import Jwt
@@ -25,12 +24,19 @@ import sys, os
 bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
 
 def main(access_token, jwt, s3, slack, local_flag):
-    #まずは、S3からアクセストークン
-    s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
+    #アクセストークンを保存するパスが存在しているかー＞していなかったら作成
+    FileOperation.check_exist(FileOperation.upload_access_token_path)
     
-    if not os.path.isfile(FileOperation.upload_access_token_path):
-    #アクセストークンをダウロード出来なかったとき用
-        create_access_token_flow(access_token, jwt, s3, recreated_flag=False)
+    s3.download_file(bucket_name, FileOperation.access_token_file_name, FileOperation.upload_access_token_path)
+
+    
+    #アクセストークンをまだ発行したことがないとき用
+    if os.path.getsize(FileOperation.upload_access_token_path) == 0:
+        if local_flag:
+            create_access_token_flow(access_token, jwt, s3, recreated_flag=False)
+        else:
+            print('アクセストークンをローカルで発行してください')
+            sys.exit(1)
     
     #まずはアクセストークンを取得する
     access_token.token = FileOperation.load_file(FileOperation.upload_access_token_path)
@@ -46,14 +52,11 @@ def main(access_token, jwt, s3, slack, local_flag):
             if input('古くなったアクセストークンを削除します。いいですか?\nyes/no\n') == 'yes':
                 access_token.old_token = FileOperation.load_file(FileOperation.upload_old_access_token_path)
                 access_token.revoke()
-
-    #GitHub上での実行の時
+    
+    #git hub上で実行される場合(トークンの検証だけ行ってslackへ通知)
     else:
-        #GitHub上からslackへ通知してくれる
-        slack.send_message(access_token.slack_message)
-        
-    #boto3は.aws/configureにアクセスのための秘匿情報を入れる必要があることに注意
-
+        slack.send_message(access_token.slack_message)   
+    
 def create_access_token_flow(access_token, jwt, s3, recreated_flag=False):
         jwt.create_assertion_key(recreated_flag)
                 
@@ -86,11 +89,12 @@ def check_argv(local_flag):
 if __name__ == '__main__':
     #クラス間での連結度をできるだけ弱くしている
     access_token = AccessToken()
-    jwt = Jwt()
-    s3 = S3()
+    s3 = S3('s3')
     webhook_url = os.getenv('SLACK_WEBHOOK_URL')
     slack = Slack(webhook_url)
-    #コマンドライン引数でlocal環境かGitHub環境か判定
+    jwt = Jwt()
+
+    
     local_flag = check_argv(sys.argv[1])
     #コマンドライン引数で特定のアクセストークンを消す処理が実行できるように(アクセストークンを渡す)
     main(access_token, jwt, s3, slack, local_flag)
