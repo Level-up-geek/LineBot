@@ -1,7 +1,7 @@
 venv
 packages
 dst.zip
-
+venv2
 aws/s3/upload_file
 .env
 memo.txt
