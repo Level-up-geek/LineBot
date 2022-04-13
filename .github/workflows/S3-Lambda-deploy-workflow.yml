@@ -38,13 +38,14 @@ jobs:
           New-Item .env
           echo "ACCESS_TOKEN=${{ steps.download-access_token.outputs.s3-object }}" > .env
           echo "LINE_SECRET_KEY=${{ secrets.LINE_SECRET_KEY }}" >> .env
+          echo "ESA_ACCESS_TOKEN=${{ secrets.ESA_ACCESS_TOKEN }}" >> .env
 
        - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
           mkdir packages/module
           cp lambda_function.py packages/
           cp .env packages/
-          cp module/esa.py packages/
+          cp module/esa.py packages/module
           compress-archive packages/* lambda_function
         
       #windowsでzipにするー＞packagesディレクトリを含まず圧縮できる。
