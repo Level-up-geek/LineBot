@@ -58,8 +58,8 @@ def get_all_posts(team_name):
             next_page = res.json()['next_page']
 
             if next_page is None:
-                print('残りリクエスト数' + res.headers['X-RateLimit-Remaining'])
-                print('リセット時間' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
+                logging.info('残りリクエスト数: ' + res.headers['X-RateLimit-Remaining'])
+                logging.info('リセット時間: ' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
             
             alt_result, members = create_posts_per_date(res)
 
@@ -70,7 +70,7 @@ def get_all_posts(team_name):
                 result[member] |= alt_result[member]
 
         else:
-            print(res.json())
+            logging.error(res.json())
     
     return result
 
