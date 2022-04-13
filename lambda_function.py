@@ -12,7 +12,10 @@ from linebot.exceptions import (
 
 from dotenv import load_dotenv
 load_dotenv()
-import logging, os, sys, esa
+
+from module import esa
+
+import logging, os, sys
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
