@@ -9,11 +9,10 @@ from linebot.exceptions import (
     LineBotApiError, InvalidSignatureError
 )
 
-from module.esa import Esa
 
 from dotenv import load_dotenv
 load_dotenv()
-import logging, os, sys
+import logging, os, sys, esa
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
