@@ -45,7 +45,7 @@ jobs:
           mkdir packages
           cp lambda_function.py packages/
           cp .env packages/
-          cp module/esa.py packages
+          cp esa.py packages
           compress-archive packages/* lambda_function
         
       #windowsでzipにするー＞packagesディレクトリを含まず圧縮できる。
