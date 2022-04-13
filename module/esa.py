@@ -58,15 +58,15 @@ def get_all_posts(team_name):
         #print(json.dumps(res.json(), indent=2))
         if res.status_code == 200:
             next_page = res.json()['next_page']
-            print(next_page)
-            print('残りリクエスト数' + res.headers['X-RateLimit-Remaining'])
-            print('リセット時間' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
+
+            if next_page is None:
+                print('残りリクエスト数' + res.headers['X-RateLimit-Remaining'])
+                print('リセット時間' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
             
             alt_result, members = create_posts_per_date(res)
 
             for member in members:
                 if not member in result:
-                    print ('実行した')
                     result[member] = {}
 
                 result[member] |= alt_result[member]

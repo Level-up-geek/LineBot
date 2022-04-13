@@ -42,10 +42,10 @@ jobs:
 
        - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
-          mkdir packages/module
+          mkdir packages
           cp lambda_function.py packages/
           cp .env packages/
-          cp module/esa.py packages/module
+          cp module/esa.py packages
           compress-archive packages/* lambda_function
         
       #windowsでzipにするー＞packagesディレクトリを含まず圧縮できる。
