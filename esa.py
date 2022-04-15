@@ -1,18 +1,10 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import requests, json, datetime, os, logging
+import requests, datetime, datetime, os, logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
-def main():
-    result = get_all_posts('level-up-geek')
-    print(result)
-    return result
-    #result = get_posts('2022/03/14', 'level-up-geek')
-    #print(result)
-
 
 def get_posts(query_date, team_name):
     url = f'https://api.esa.io/v1/teams/{team_name}/posts'
@@ -26,7 +18,9 @@ def get_posts(query_date, team_name):
     }
     res = requests.get(url, headers=headers, params=body)
     
-    return create_posts_per_date(res)
+    result = create_posts_per_date(res)
+
+    return result
 
    
 """"
@@ -114,8 +108,4 @@ def create_posts_per_date(res):
                 posts_per_date[member][date] = 1
 
     return posts_per_date, members
-
-if __name__ == '__main__':
-    main()
-
 
