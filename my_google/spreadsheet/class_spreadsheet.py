@@ -24,6 +24,8 @@ class SpreadSheet:
             #ユーザ名でシート判別でできるように
             if worksheet.title != user:
                 worksheet.update_title(user)
+            
+            
 
             for date, posts_count in user_data.items():
                 pass

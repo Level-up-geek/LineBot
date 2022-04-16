@@ -2,7 +2,7 @@ from my_google.spreadsheet.class_spreadsheet import SpreadSheet
 
 import esa
 
-import sys, datetime
+import sys, datetime, logging
  
 
 def main(all_get_flag):
@@ -15,11 +15,12 @@ def main(all_get_flag):
     else:
         query_date = str(datetime.date.today())
         result = esa.get_posts(query_date, team_name)
-    
+    import pprint
+    pprint.pprint(result)
     spreadsheet_key = '1MNhqVd8PhYp0rjVx6fYdJDKl2Bxfe1KKoCp6PWkdDBU'
     spreadsheet = SpreadSheet(spreadsheet_key)
 
-    spreadsheet.write(result)
+    #spreadsheet.write(result)
    
 
 
@@ -27,7 +28,7 @@ def check_argv(local_flag):
     if local_flag.isdigit():
         return int(local_flag)
     else: 
-        print('コマンドライン引数には0(local環境以外)か1(local環境)を入力してください。')
+        logging.error('コマンドライン引数には0(local環境以外)か1(local環境)を入力してください。')
         sys.exit(1)
 
 if __name__ == '__main__':

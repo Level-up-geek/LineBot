@@ -18,8 +18,19 @@ def get_posts(query_date, team_name):
     }
     res = requests.get(url, headers=headers, params=body)
     
-    result = create_posts_per_date(res)
+    #post_per_date, month, year
+    alt_result = create_posts_per_date(res, every_day_flag=True)
+    
+    #当日の分だけ抽出するための情報を定義
+    year = alt_result[2]
+    month = alt_result[1]
+    day = query_date.split('-')[2]
 
+    result = {}
+
+    for user, post_per_date in alt_result[0].items():
+        result |= {user: {year: {month: {date: posts_count}}}  for date, posts_count in post_per_date[year][month].items() if date == day}
+    
     return result
 
    
@@ -36,9 +47,9 @@ def get_all_posts(team_name):
     }
     
     next_page = 0
-    alt_result = {}
     result = {}
-    members = []
+    pre_month = '0'
+    pre_year = '0'
     
     while next_page is not None:
         body = {
@@ -47,7 +58,7 @@ def get_all_posts(team_name):
         }
 
         res = requests.get(url, headers=headers, params=body)
-        #print(json.dumps(res.json(), indent=2))
+
         if res.status_code == 200:
             next_page = res.json()['next_page']
 
@@ -55,14 +66,7 @@ def get_all_posts(team_name):
                 logging.info('残りリクエスト数: ' + res.headers['X-RateLimit-Remaining'])
                 logging.info('リセット時間: ' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
             
-            alt_result, members = create_posts_per_date(res)
-
-            for member in members:
-                if not member in result:
-                    result[member] = {}
-
-                result[member] |= alt_result[member]
-
+            result, pre_month, pre_year = create_posts_per_date(res, posts_per_date=result, pre_month=pre_month, pre_year=pre_year)
         else:
             logging.error(res.json())
     
@@ -88,24 +92,45 @@ def get_members(team_name):
 ユーザごとの日付ごとに投稿した数
 
 """
-def create_posts_per_date(res):
-    posts_per_date = {}
+def create_posts_per_date(res, every_day_flag=False, posts_per_date={}, pre_month=0, pre_year=0):
+    #MEMO:最初の一回だけでいいよね。
     members = get_members('level-up-geek')
-
+    
     for member in members:
-        posts_per_date[member] = {}
+        if not member in posts_per_date:
+            posts_per_date[member] = {}
 
     for post in res.json()['posts']:
-        date = datetime.datetime.fromisoformat(post['created_at']).strftime('%Y-%m-%d')
-        member = post['created_by']['screen_name']
-        if member ==  'esa_bot':
+        date = datetime.datetime.fromisoformat(post['created_at']).date()
+        year = str(date.year)
+        month = str(date.month)
+        day = str(date.day)
+        
+        if post['created_by']['screen_name'] ==  'esa_bot':
             continue
         else: 
-            #MEMO:日付は非連続ー＞1週間のグラフ化の時date in hash->falseならhash[date] = 0とする
-            if date in posts_per_date[member]:
-                posts_per_date[member][date] += 1
-            else:
-                posts_per_date[member][date] = 1
+            #投稿ごとにposts_per_dateのmonthとを比較して異なればその異なる月の日にちごとの投稿数を初期化する
+            if year != pre_year:
+                pre_year = year
+                for member in members:
+                    posts_per_date[member][year] = {}
 
-    return posts_per_date, members
+            if month != pre_month:
+                pre_month = month
 
+                from pandas.core.common import flatten
+                import calendar
+                #月の日にちをすべて取得する
+                original_day_list = calendar.monthcalendar(year=int(year), month=int(month))
+                #特定の要素すべて削除
+                day_list = [day for day in list(flatten(original_day_list)) if day != 0]
+
+                for member in members:    
+                    posts_per_date[member][year][month] = {}
+                    for d in day_list:
+                        posts_per_date[member][year][month][str(d)] = 0
+            
+            posts_per_date[member][year][month][day] += 1
+    
+    #このページでの最後の投稿の月を返す
+    return posts_per_date, month, year
