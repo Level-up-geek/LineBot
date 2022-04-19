@@ -7,9 +7,11 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 def get_posts(query_date, team_name):
+    access_token = os.getenv('ESA_ACCESS_TOKEN')
+
     url = f'https://api.esa.io/v1/teams/{team_name}/posts'
     headers = {
-        'Authorization': 'Bearer {}'.format('cHloQoCpA3NELDRvHDMw8KqqBd1UuxO7E8okDobtFwk'),
+        'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json;charset=UTF-8'
     }
     body = {
@@ -40,9 +42,11 @@ def get_posts(query_date, team_name):
 postsの差分をgetしていく
 """
 def get_all_posts(team_name):
+    access_token = os.getenv('ESA_ACCESS_TOKEN')
+
     url = f'https://api.esa.io/v1/teams/{team_name}/posts'
     headers = {
-        'Authorization': 'Bearer {}'.format('cHloQoCpA3NELDRvHDMw8KqqBd1UuxO7E8okDobtFwk'),
+        'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json;charset=UTF-8'
     }
     
@@ -90,30 +94,30 @@ def get_members(team_name):
 
 """"
 ユーザごとの日付ごとに投稿した数
-
 """
 def create_posts_per_date(res, every_day_flag=False, posts_per_date={}, pre_month=0, pre_year=0):
     #MEMO:最初の一回だけでいいよね。
     members = get_members('level-up-geek')
     
-    for member in members:
-        if not member in posts_per_date:
-            posts_per_date[member] = {}
+    for person in members:
+        if not person in posts_per_date:
+            posts_per_date[person] = {}
 
     for post in res.json()['posts']:
         date = datetime.datetime.fromisoformat(post['created_at']).date()
         year = str(date.year)
         month = str(date.month)
         day = str(date.day)
+        member = post['created_by']['screen_name']
         
-        if post['created_by']['screen_name'] ==  'esa_bot':
+        if member ==  'esa_bot':
             continue
         else: 
             #投稿ごとにposts_per_dateのmonthとを比較して異なればその異なる月の日にちごとの投稿数を初期化する
             if year != pre_year:
                 pre_year = year
-                for member in members:
-                    posts_per_date[member][year] = {}
+                for person in members:
+                    posts_per_date[person][year] = {}
 
             if month != pre_month:
                 pre_month = month
@@ -125,10 +129,10 @@ def create_posts_per_date(res, every_day_flag=False, posts_per_date={}, pre_mont
                 #特定の要素すべて削除
                 day_list = [day for day in list(flatten(original_day_list)) if day != 0]
 
-                for member in members:    
-                    posts_per_date[member][year][month] = {}
+                for person in members:    
+                    posts_per_date[person][year][month] = {}
                     for d in day_list:
-                        posts_per_date[member][year][month][str(d)] = 0
+                        posts_per_date[person][year][month][str(d)] = 0
             
             posts_per_date[member][year][month][day] += 1
     
