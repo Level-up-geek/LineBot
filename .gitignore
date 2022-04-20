@@ -4,4 +4,4 @@ dst.zip
 venv2
 aws/s3/upload_file
 .env
-__pycache__/
+__pycache__

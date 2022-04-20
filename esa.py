@@ -1,45 +1,73 @@
 from dotenv import load_dotenv
 load_dotenv()
+from pandas.core.common import flatten
 
-import requests, datetime, datetime, os, logging
+import requests, datetime, datetime, os, logging, sys, calendar
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-def get_posts(query_date, team_name):
+"""
+週間ごと、月ごと記事情報の取得を行う。
+"""
+def get_posts(query_date, team_name, week_or_month_flag):
     access_token = os.getenv('ESA_ACCESS_TOKEN')
-
+    if week_or_month_flag == 'week':
+        query_date_str = [date.strftime('%Y-%m-%d') for date in query_date]
+        q = f'created: <{query_date_str[-1]} created: >{query_date_str[0]}'
+    else:
+        #monthの場合は既にquery_dateがstr型
+        q = f'created: <{query_date[1]} created: >{query_date[0]}'
+    
     url = f'https://api.esa.io/v1/teams/{team_name}/posts'
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json;charset=UTF-8'
     }
-    body = {
-        'q': f'created:{query_date}',
-        'sort': 'created'
-    }
-    res = requests.get(url, headers=headers, params=body)
-    
-    #post_per_date, month, year
-    alt_result = create_posts_per_date(res, every_day_flag=True)
-    
-    #当日の分だけ抽出するための情報を定義
-    year = alt_result[2]
-    month = alt_result[1]
-    day = query_date.split('-')[2]
 
+    next_page = 0
+    pre_month = '0'
+    pre_year = '0'
     result = {}
 
-    for user, post_per_date in alt_result[0].items():
-        result |= {user: {year: {month: {date: posts_count}}}  for date, posts_count in post_per_date[year][month].items() if date == day}
-    
-    return result
+    while next_page is not None:
+        body = {
+            'page': next_page,
+            'q': q,
+            'sort': 'created'
+        }
+        res = requests.get(url, headers=headers, params=body)
+        #MEMO:本当はここからは、get_postsとは関係ないので他の関数でやった方がいい
+        if res.status_code == 200:
+            next_page = res.json()['next_page']
+            
+            if next_page is None:
+                logging.info('残りリクエスト数: ' + res.headers['X-RateLimit-Remaining'])
+                logging.info('リセット時間: ' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
 
-   
+            result, pre_month, pre_year  = create_posts_per_date(res, posts_per_date=result, pre_month=pre_month, pre_year=pre_year)
+        else:
+            logging.error(res.json())
+            sys.exit(1)
+    
+    if week_or_month_flag == 'week':
+        print(pre_month)
+        return extract_week_list(result, pre_month, pre_year, query_date)
+    else:
+        return result
+
+"""
+役割ごとに関数は変える
+なるべく一つの関数での処理を短く。
+今回でいうと、esa APIをたたく関数と
+そのレスポンスを加工する関数を別々のファイルで書くべき
+esa.pyはesa APIを使うためのものであるべきだし、writing_esaInfo_csv.pyで加工する
+関数を呼ぶべきだよね。拡張性の問題。
+"""
+
 """"
-これは最初の一回だけ実行される
-以降はget_postsで毎日一回実行され
-postsの差分をgetしていく
+すべての記事情報の取得
+ローカルで最初に実行するものかな
 """
 def get_all_posts(team_name):
     access_token = os.getenv('ESA_ACCESS_TOKEN')
@@ -74,6 +102,10 @@ def get_all_posts(team_name):
         else:
             logging.error(res.json())
     
+    if pre_month == '0':
+        logging.error('投稿していない月があります。正しいデータを作成できません')
+        sys.exit(1)
+
     return result
 
 """
@@ -95,10 +127,10 @@ def get_members(team_name):
 """"
 ユーザごとの日付ごとに投稿した数
 """
-def create_posts_per_date(res, every_day_flag=False, posts_per_date={}, pre_month=0, pre_year=0):
+def create_posts_per_date(res, posts_per_date={}, pre_month=0, pre_year=0):
     #MEMO:最初の一回だけでいいよね。
     members = get_members('level-up-geek')
-    
+
     for person in members:
         if not person in posts_per_date:
             posts_per_date[person] = {}
@@ -122,8 +154,6 @@ def create_posts_per_date(res, every_day_flag=False, posts_per_date={}, pre_mont
             if month != pre_month:
                 pre_month = month
 
-                from pandas.core.common import flatten
-                import calendar
                 #月の日にちをすべて取得する
                 original_day_list = calendar.monthcalendar(year=int(year), month=int(month))
                 #特定の要素すべて削除
@@ -135,6 +165,37 @@ def create_posts_per_date(res, every_day_flag=False, posts_per_date={}, pre_mont
                         posts_per_date[person][year][month][str(d)] = 0
             
             posts_per_date[member][year][month][day] += 1
-    
+
     #このページでの最後の投稿の月を返す
-    return posts_per_date, month, year
+    return posts_per_date, pre_month, pre_year
+
+"""
+post_per_dateから抽出したい週のdictを返す
+query_date: 抽出したい週(date型)の日付けが入ったのリスト
+"""
+def extract_week_list(post_per_date_user, month, year, query_date):
+    other_month = None
+
+    c = calendar.monthcalendar(year=int(year), month=int(month) + 1)
+    next_day_list = [day for day in list(flatten(c)) if day != 0]
+
+    c = calendar.monthcalendar(year=int(year), month=int(month) - 1)
+    pre_day_list = [day for day in list(flatten(c)) if day != 0]
+    #月をまたがった時の対応
+    if datetime.date(int(year), int(month) - 1, pre_day_list[-1]) in query_date:
+        other_month = str(int(month) - 1)
+    elif datetime.date(int(year), int(month) + 1, next_day_list[0]) in query_date:
+        other_month = str(int(month) + 1)
+    #1月の時の対応(年マタギ)
+
+    for user, post_per_date in post_per_date_user.items():
+        #listでkeysを確保しておくことで、iterator中にdictやlistを変更してエラー起きなくなる。
+        for day in list(post_per_date[year][month].keys()):
+            if datetime.date(int(year), int(month), int(day)) not in query_date:
+                post_per_date_user[user][year][month].pop(day)
+        if other_month is not None:
+            for day in list(post_per_date[year][other_month].keys()):
+                if datetime.date(int(year), int(other_month), int(day)) not in query_date:
+                    post_per_date_user[user][year][other_month].pop(day)
+    
+    return post_per_date_user
