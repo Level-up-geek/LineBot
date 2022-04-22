@@ -4,9 +4,6 @@ from pandas.core.common import flatten
 
 import requests, datetime, datetime, os, logging, sys, calendar
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
 """
 週間ごと、月ごと記事情報の取得を行う。
 """
@@ -50,20 +47,14 @@ def get_posts(query_date, team_name, week_or_month_flag):
             logging.error(res.json())
             sys.exit(1)
     
+    if pre_month == '0':
+        logging.error('投稿していない月があります。正しいデータを作成できません')
+        sys.exit(1)
+    
     if week_or_month_flag == 'week':
-        print(pre_month)
         return extract_week_list(result, pre_month, pre_year, query_date)
     else:
         return result
-
-"""
-役割ごとに関数は変える
-なるべく一つの関数での処理を短く。
-今回でいうと、esa APIをたたく関数と
-そのレスポンスを加工する関数を別々のファイルで書くべき
-esa.pyはesa APIを使うためのものであるべきだし、writing_esaInfo_csv.pyで加工する
-関数を呼ぶべきだよね。拡張性の問題。
-"""
 
 """"
 すべての記事情報の取得
@@ -103,7 +94,7 @@ def get_all_posts(team_name):
             logging.error(res.json())
     
     if pre_month == '0':
-        logging.error('投稿していない月があります。正しいデータを作成できません')
+        logging.error('今月は投稿されていないです。正しいデータを作成できません')
         sys.exit(1)
 
     return result

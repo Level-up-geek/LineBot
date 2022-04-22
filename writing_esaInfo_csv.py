@@ -1,3 +1,4 @@
+from smtplib import SMTP_SSL
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -8,24 +9,29 @@ import esa
 
 import sys, datetime, logging, os, calendar
 import pandas as pd
+import matplotlib.pyplot as plt
+
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
-    #MEMO: 環境変数に入れるかいれないか
     team_name = os.getenv('ESA_TEAM_NAME')
-    today = datetime.date(2022, 3, 27)
+    today = datetime.date(2022, 4, 30)
+    week_number = 0
+
     if week_or_month_flag == 'week':        
         c = calendar.Calendar(0)
         calendar_list = c.monthdatescalendar(today.year, today.month)
-        
-        #今週分を抽出
-        week_list = [week_list for week_list in calendar_list if today in week_list ]
-        print(week_list)
-        query_date = week_list[0]
+        #MEMO:今週分を抽出・Lambda側でもグラフを取り出すさいに使う。
+        week_list = [[i, week_list] for i, week_list in enumerate(calendar_list) if today in week_list ]
+        #mothdatecalendarのlistの要素番号が週番号と見立てた。
+        week_number = week_list[0][0]
+        query_date = week_list[0][1]
     else:
         c = calendar.monthcalendar(year=today.year, month=today.month)
         day_list = [day for day in list(flatten(c)) if day != 0]        
         query_date = [datetime.date(today.year, today.month, day_list[0]).strftime('%Y-%m-%d'), datetime.date(today.year, today.month, day_list[-1]).strftime('%Y-%m-%d')]
-            
+    
     #esaにあるユーザごとの日付ごとの記事投稿数を取得
     if all_get_flag:
         result = esa.get_all_posts(team_name)
@@ -34,27 +40,42 @@ def main(all_get_flag, week_or_month_flag):
 
     year = str(today.year)
     month = str(today.month)
+    week_on_number = {
+        0: 'first_week',
+        1: 'second_week',
+        2: 'third_week',
+        3: 'fourth_week',
+        4: 'fifth_week'
+    }
 
     if week_or_month_flag == 'month':
-        create_csv_per_month(result, year, month)
+        csv_file_path = f'csv/member/{year}/{month}/posts_count_per_date.csv'
+        create_csv(result, csv_file_path, year, month)
     else:
-        create_csv_per_week(result,  year, month)
+        csv_file_path = f'csv/member/{year}/{month}/{week_on_number[week_number]}/posts_count_per_date.csv'
+        create_csv(result, csv_file_path, year, month)
 
-def create_csv_per_month(data, year, month):
+
+"""
+csvファイルを作成する
+グラフを作る関数を呼び出す
+"""
+def create_csv(data, csv_file_path_alt, year, month):
     for member in data.keys():
-        csv_file_path = f'csv/{member}/{year}/{month}/posts_count_per_date.csv'
-        data_list = [[day, count] for day, count in data[member][year][month].items()]
-
-        df = pd.DataFrame(data_list, columns=['Date', 'PostCount'])
-        df.to_csv(fo.check_exist(csv_file_path), index=False)
+        date_list = []
+        csv_file_path = csv_file_path_alt.replace('member', member)
+        for month, posts_count_per_day in  reversed(data[member][year].items()):
+            [date_list.append([day, count]) for day, count in posts_count_per_day.items()]
         
+        df = pd.DataFrame(date_list, columns=['Date', 'PostCount'])
+        df.to_csv(fo.check_exist(csv_file_path), index=False)
+        df.plot(x='Date')
+        plt.show()
+        sys.exit(1)   
 
-    
-def create_csv_per_week(data, year, month, week_number):
-    print('')
-   
-
-
+"""
+標準入力のチェック
+"""
 def check_digit_argv(all_get_flag):
     if all_get_flag.isdigit():
         return int(all_get_flag)
