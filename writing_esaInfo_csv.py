@@ -1,4 +1,4 @@
-from smtplib import SMTP_SSL
+from cProfile import label
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -10,13 +10,14 @@ import esa
 import sys, datetime, logging, os, calendar
 import pandas as pd
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
-    today = datetime.date(2022, 4, 30)
+    today = datetime.date(2022, 4, 10)
     week_number = 0
 
     if week_or_month_flag == 'week':        
@@ -61,17 +62,47 @@ csvファイルを作成する
 グラフを作る関数を呼び出す
 """
 def create_csv(data, csv_file_path_alt, year, month):
+    comparison_source_ax = None
+    #MEMO:memberが増えると、member同士の比較は修正しないとむり。
     for member in data.keys():
         date_list = []
+        monthes = []
         csv_file_path = csv_file_path_alt.replace('member', member)
         for month, posts_count_per_day in  reversed(data[member][year].items()):
             [date_list.append([day, count]) for day, count in posts_count_per_day.items()]
-        
-        df = pd.DataFrame(date_list, columns=['Date', 'PostCount'])
+            monthes.append(month)
+
+        df = pd.DataFrame(date_list, columns=['日付け', '投稿数'])
         df.to_csv(fo.check_exist(csv_file_path), index=False)
-        df.plot(x='Date')
-        plt.show()
-        sys.exit(1)   
+        
+        x_label = '日付け'
+        y_label = '投稿数'
+        
+        #比較図
+        if comparison_source_ax is not None:
+            title = f'比較: {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
+            comparison_distination_df = df.rename(columns={'投稿数': f'{member}の投稿数'})
+            comparison_distination_df.plot(title=title, x=x_label, color='r', label=member, ylim=(0, 3), ax=comparison_source_ax)
+
+            image_file_path = csv_file_path.replace('.csv', '.png').replace(member, 'comparison')
+            plt.savefig(fo.check_exist(image_file_path), dpi=300)
+            
+        title = f'{member} {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
+        #比較用のデータフレームとplot
+
+        ax = df.plot(title=title, yticks=[0, 1, 2, 3], x=x_label, color='pink', ylim=(0, 3), label=member)
+        ax.set_xlabel(xlabel=x_label)
+        ax.set_ylabel(ylabel=y_label, labelpad=15, rotation = 'horizontal')
+        #MEMO: 月のグラフは週ごと(1~7, 8~15, 16~23, 24~31)の合計を出してそのグラフで
+        #あと、前週との比較は棒グラフにするか、user同士とか
+        # df. plot.bar()
+        image_file_path = csv_file_path.replace('.csv', '.png')
+        #dpiは1ピクセルにどのくらいのドットで表すか。デフォは100
+        plt.savefig(fo.check_exist(image_file_path), dpi=300)
+
+        if comparison_source_ax is None:
+            comparison_source_df = df.rename(columns={'投稿数': f'{member}の投稿数'})
+            comparison_source_ax = comparison_source_df.plot(title=title, yticks=[0, 1, 2, 3], x=x_label, color='b', ylim=(0, 3), label=member)
 
 """
 標準入力のチェック

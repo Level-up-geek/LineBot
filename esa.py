@@ -48,7 +48,7 @@ def get_posts(query_date, team_name, week_or_month_flag):
             sys.exit(1)
     
     if pre_month == '0':
-        logging.error('投稿していない月があります。正しいデータを作成できません')
+        logging.error('投稿していない月または週があります。正しいデータを作成できません')
         sys.exit(1)
     
     if week_or_month_flag == 'week':
