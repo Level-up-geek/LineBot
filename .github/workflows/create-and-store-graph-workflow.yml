@@ -31,6 +31,9 @@ jobs:
         with:
           python-version: 3.9
     
+      - name: Install python package
+        run: pip install -r ./requirements.txt
+        
       - name: When date is weekly on Sunday
       #contextのgithubは${{}}で囲わなくても怒られないんだ。え、いいの？？
         if: ${{ github.event.schedule == '45 23 * * 0' || github.event_name == 'workflow_dispatch' }}
