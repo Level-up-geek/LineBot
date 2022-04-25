@@ -55,6 +55,5 @@ class FileOperation:
             
             with open(path, 'w') as f:
                 f.write('')
-            return False
 
-        return True
+        return path
