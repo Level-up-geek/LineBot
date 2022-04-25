@@ -33,7 +33,12 @@ jobs:
     
       - name: Install python package
         run: pip install -r ./requirements.txt
-        
+
+      - name: Create env
+        run: |
+          echo 'ESA_ACCESS_TOKEN=${{ secrets.ESA_ACCESS_TOKEN }}' > .env
+          echo 'ESA_TEAM_NAME=${{ secrets.ESA_TEAM_NAME }}' >> .env
+
       - name: When date is weekly on Sunday
       #contextのgithubは${{}}で囲わなくても怒られないんだ。え、いいの？？
         if: ${{ github.event.schedule == '45 23 * * 0' || github.event_name == 'workflow_dispatch' }}
