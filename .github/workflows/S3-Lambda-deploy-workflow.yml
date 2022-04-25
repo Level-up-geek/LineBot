@@ -26,21 +26,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
        
-       - name: download-access_token
+       - name: Download-access_token
          id: download-access_token
          uses: ./.github/actions/download-s3-object-action
          with:
           s3-object: 'access_token.json'
           key: '.access_token'
 
-       - name: create env and write secret information
+       - name: Create env and write secret information
          run: |
           New-Item .env
           echo "ACCESS_TOKEN=${{ steps.download-access_token.outputs.s3-object }}" > .env
           echo "LINE_SECRET_KEY=${{ secrets.LINE_SECRET_KEY }}" >> .env
           echo "ESA_ACCESS_TOKEN=${{ secrets.ESA_ACCESS_TOKEN }}" >> .env
 
-       - name: create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
+       - name: Create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
           mkdir packages
           cp lambda_function.py packages/
@@ -68,7 +68,7 @@ jobs:
         with:
           name: lambda_function
 
-      - name: cat lambda_function.zip
+      - name: Cat lambda_function.zip
         run: zipinfo lambda_function.zip
         
       - name: Configure AWS Credentials
@@ -78,7 +78,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
       
-      - name: upload lambda_function.zip to s3
+      - name: Upload lambda_function.zip to s3
         run: aws s3 cp lambda_function.zip s3://levelupgeek
 
   Lambda-deploy:
@@ -99,7 +99,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
 
-      - name: update Lambda function
+      - name: Update Lambda function
       #不要な情報を出力しないようにフィルタリングする
         run: |
           aws lambda update-function-code --function-name LineBot --s3-bucket levelupgeek --s3-key lambda_function.zip\

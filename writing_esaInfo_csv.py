@@ -17,7 +17,7 @@ logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
-    today = datetime.date(2022, 4, 10)
+    today = datetime.date(2022, 4, 24)
     week_number = 0
 
     if week_or_month_flag == 'week':        
@@ -120,6 +120,11 @@ def check_str_argv(week_or_month_flag):
         logging.error('weekかmonthを入力してください')
         sys.exit(1)
 
+"""
+実行時引数として以下の二つが必要
+・全記事取得か月ごと、週間ごとに取得か(1 or 0)
+・月ごとか週間ごとのグラフを取得か(month or week)
+"""
 if __name__ == '__main__':
     all_get_flag = check_digit_argv(sys.argv[1])
     week_or_month_flag = check_str_argv(sys.argv[2])

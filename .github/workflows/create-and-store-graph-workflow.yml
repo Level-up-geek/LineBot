@@ -1,0 +1,40 @@
+name: Graph
+
+on:
+  schedule:
+  #毎週日曜日と月末の23:45
+    - cron: '45 23 * * 0'
+    - cron: '45 23 28-31 * *'
+  workflow_dispatch:
+    
+
+
+jobs:
+  create-store-graph:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+        
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+    
+      - name: When date is weekly on Sunday
+        if: github.event.schedule == '45 23 * * 0' | github.event_name == 'workflow_dispatch'
+        run: python writing_esaInfo_csv.py 0 week
+
+      - name: When date is month last day
+        if: github.event.schedule == '45 23 28-31 * *' && /usr/bin/test `date -d tomorrow +\%d` -eq 1
+        run: python writing_esaInfo_csv.py 0 month
+
+      - name: Store csv and png file to s3
+        run: aws s3 sync data_file/ s3://posts-per-date-data/data_file/
