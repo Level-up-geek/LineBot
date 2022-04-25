@@ -11,7 +11,8 @@ def get_posts(query_date, team_name, week_or_month_flag):
     access_token = os.getenv('ESA_ACCESS_TOKEN')
     if week_or_month_flag == 'week':
         query_date_str = [date.strftime('%Y-%m-%d') for date in query_date]
-        q = f'created: <{query_date_str[-1]} created: >{query_date_str[0]}'
+        query_date_last = str(int(query_date_str[-1].split('-')[2]) + 1)
+        q = f'created: <{query_date_last} created: >{query_date_str[0]}'
     else:
         #monthの場合は既にquery_dateがstr型
         q = f'created: <{query_date[1]} created: >{query_date[0]}'
