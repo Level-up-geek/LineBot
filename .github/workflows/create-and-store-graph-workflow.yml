@@ -34,7 +34,7 @@ jobs:
         run: python writing_esaInfo_csv.py 0 week
 
       - name: When date is month last day
-        if: ${{ github.event.schedule == '45 23 28-31 * *' && /usr/bin/test `date -d tomorrow +\%d` -eq 1 }}
+        if: ${{ github.event.schedule == '45 23 28-31 * *' && $(/usr/bin/test `date -d tomorrow +\%d` -eq 1) }}
         run: python writing_esaInfo_csv.py 0 month
 
       - name: Store csv and png file to s3
