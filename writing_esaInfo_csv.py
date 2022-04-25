@@ -17,7 +17,7 @@ logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
-    today = datetime.date(2022, 4, 24)
+    today = datetime.date(2022, 4, 10)
     week_number = 0
 
     if week_or_month_flag == 'week':        
@@ -32,7 +32,7 @@ def main(all_get_flag, week_or_month_flag):
         c = calendar.monthcalendar(year=today.year, month=today.month)
         day_list = [day for day in list(flatten(c)) if day != 0]        
         query_date = [datetime.date(today.year, today.month, day_list[0]).strftime('%Y-%m-%d'), datetime.date(today.year, today.month, day_list[-1]).strftime('%Y-%m-%d')]
-    
+
     #esaにあるユーザごとの日付ごとの記事投稿数を取得
     if all_get_flag:
         result = esa.get_all_posts(team_name)
