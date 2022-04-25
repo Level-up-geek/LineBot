@@ -29,11 +29,12 @@ jobs:
           python-version: 3.9
     
       - name: When date is weekly on Sunday
-        if: github.event.schedule == '45 23 * * 0' | github.event_name == 'workflow_dispatch'
+      #contextのgithubは${{}}で囲わなくても怒られないんだ。え、いいの？？
+        if: ${{ github.event.schedule == '45 23 * * 0' || github.event_name == 'workflow_dispatch' }}
         run: python writing_esaInfo_csv.py 0 week
 
       - name: When date is month last day
-        if: github.event.schedule == '45 23 28-31 * *' && /usr/bin/test `date -d tomorrow +\%d` -eq 1
+        if: ${{ github.event.schedule == '45 23 28-31 * *' && /usr/bin/test `date -d tomorrow +\%d` -eq 1 }}
         run: python writing_esaInfo_csv.py 0 month
 
       - name: Store csv and png file to s3
