@@ -7,3 +7,4 @@ aws/s3/upload_file
 __pycache__
 csv
 my_google
+data_file
