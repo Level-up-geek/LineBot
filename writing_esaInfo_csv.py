@@ -50,10 +50,10 @@ def main(all_get_flag, week_or_month_flag):
     }
 
     if week_or_month_flag == 'month':
-        csv_file_path = f'csv/member/{year}/{month}/posts_count_per_date.csv'
+        csv_file_path = f'data_file/member/{year}/{month}/posts_count_per_date.csv'
         create_csv(result, csv_file_path, year, month)
     else:
-        csv_file_path = f'csv/member/{year}/{month}/{week_on_number[week_number]}/posts_count_per_date.csv'
+        csv_file_path = f'data_file/member/{year}/{month}/{week_on_number[week_number]}/posts_count_per_date.csv'
         create_csv(result, csv_file_path, year, month)
 
 
@@ -78,7 +78,7 @@ def create_csv(data, csv_file_path_alt, year, month):
         x_label = '日付け'
         y_label = '投稿数'
         
-        #比較図
+        #比較図の作成
         if comparison_source_ax is not None:
             title = f'比較: {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
             comparison_distination_df = df.rename(columns={'投稿数': f'{member}の投稿数'})
@@ -88,8 +88,7 @@ def create_csv(data, csv_file_path_alt, year, month):
             plt.savefig(fo.check_exist(image_file_path), dpi=300)
             
         title = f'{member} {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
-        #比較用のデータフレームとplot
-
+    
         ax = df.plot(title=title, yticks=[0, 1, 2, 3], x=x_label, color='pink', ylim=(0, 3), label=member)
         ax.set_xlabel(xlabel=x_label)
         ax.set_ylabel(ylabel=y_label, labelpad=15, rotation = 'horizontal')
