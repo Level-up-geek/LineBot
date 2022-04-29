@@ -5,10 +5,8 @@ on:
   pull_request:
     types:
       - closed
-
   workflow_dispatch:
-    branches:
-      - main
+
 
 jobs:
   Zip-create:
