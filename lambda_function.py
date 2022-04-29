@@ -35,7 +35,7 @@ line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
 def lambda_handler(event, context):
-    if event['headers'] is None:
+    if not 'headers' in event:
         push_message(line_bot_api, os.getenv('LINE_GROUP_ID'), event['time'])
     else:
         if 'x-line-signature' in event['headers']:
