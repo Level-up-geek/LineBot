@@ -178,7 +178,8 @@ def extract_week_list(post_per_date_user, month, year, query_date):
         other_month = str(int(month) - 1)
     elif datetime.date(int(year), int(month) + 1, next_day_list[0]) in query_date:
         other_month = str(int(month) + 1)
-    #1月の時の対応(年マタギ)
+    #MEMO:1月の時の対応(年マタギ)
+    #[year]も月の時のように処理しないといけない。
 
     for user, post_per_date in post_per_date_user.items():
         #listでkeysを確保しておくことで、iterator中にdictやlistを変更してエラー起きなくなる。

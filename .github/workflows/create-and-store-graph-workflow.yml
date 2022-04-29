@@ -40,7 +40,6 @@ jobs:
           echo 'ESA_TEAM_NAME=${{ secrets.ESA_TEAM_NAME }}' >> .env
 
       - name: When date is weekly on Sunday
-      #contextのgithubは${{}}で囲わなくても怒られないんだ。え、いいの？？
         if: ${{ github.event.schedule == '45 23 * * 0' || github.event_name == 'workflow_dispatch' }}
         run: python writing_esaInfo_csv.py 0 week
 

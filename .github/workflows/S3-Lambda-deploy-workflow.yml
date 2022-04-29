@@ -39,6 +39,8 @@ jobs:
           echo "ACCESS_TOKEN=${{ steps.download-access_token.outputs.s3-object }}" > .env
           echo "LINE_SECRET_KEY=${{ secrets.LINE_SECRET_KEY }}" >> .env
           echo "ESA_ACCESS_TOKEN=${{ secrets.ESA_ACCESS_TOKEN }}" >> .env
+          echo "LINE_GROUP_ID=${{ secrets.LINE_GROUP_ID }}" >> .env
+          echo "AWS_S3_BUCKET_NAME_FOR_DATA=${{ secrets.AWS_S3_BUCKET_NAME_FOR_DATA }}" >> .env
 
        - name: Create packages and pip install and cp lambda_function.py, .env and create zip lambda_function
          run: |
