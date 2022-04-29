@@ -79,7 +79,7 @@ def create_csv(data, csv_file_path_alt, year, month):
         x_label = '日付け'
         y_label = '投稿数'
         
-        #比較図の作成
+        #比較図の作成(2人用)
         if comparison_source_ax is not None:
             title = f'比較: {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
             comparison_distination_df = df.rename(columns={'投稿数': f'{member}の投稿数'})
