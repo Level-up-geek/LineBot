@@ -11,8 +11,10 @@ def get_posts(query_date, team_name, week_or_month_flag):
     access_token = os.getenv('ESA_ACCESS_TOKEN')
     if week_or_month_flag == 'week':
         query_date_str = [date.strftime('%Y-%m-%d') for date in query_date]
-        query_date_last = str(int(query_date_str[-1].split('-')[2]) + 1)
-        q = f'created: <{query_date_last} created: >{query_date_str[0]}'
+        #queryが~以下ができない。未満しかできないので週の最終日を+1して置き換える取得する。
+        query_date_last = str(int(query_date_str[-1].split('-')[2]) + 1).zfill(2)
+        week_last_date = query_date_str[-1][:8] + query_date_last
+        q = f'created: <{week_last_date} created: >{query_date_str[0]}'
     else:
         #monthの場合は既にquery_dateがstr型
         q = f'created: <{query_date[1]} created: >{query_date[0]}'
@@ -157,13 +159,16 @@ def create_posts_per_date(res, posts_per_date={}, pre_month=0, pre_year=0):
                         posts_per_date[person][year][month][str(d)] = 0
             
             posts_per_date[member][year][month][day] += 1
-
     #このページでの最後の投稿の月を返す
     return posts_per_date, pre_month, pre_year
 
 """
 post_per_dateから抽出したい週のdictを返す
 query_date: 抽出したい週(date型)の日付けが入ったのリスト
+
+・注意
+query_dateで月をまたいでいる場合、次の月の投稿がされてないとkeyエラーになる
+(普通は、cronでスケジュールされてるからまだ投稿されていない月が含まれる形で実行はされないはず。)
 """
 def extract_week_list(post_per_date_user, month, year, query_date):
     other_month = None
@@ -187,6 +192,8 @@ def extract_week_list(post_per_date_user, month, year, query_date):
             if datetime.date(int(year), int(month), int(day)) not in query_date:
                 post_per_date_user[user][year][month].pop(day)
         if other_month is not None:
+            print(other_month)
+            print(post_per_date)
             for day in list(post_per_date[year][other_month].keys()):
                 if datetime.date(int(year), int(other_month), int(day)) not in query_date:
                     post_per_date_user[user][year][other_month].pop(day)

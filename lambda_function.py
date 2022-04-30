@@ -60,15 +60,12 @@ def lambda_handler(event, context):
 
 def push_message(client, group_id, today):
     urls = get_signature_image_url(today)
-    #一気に写真送信することは無理なのかな？
     for url in urls:
-        client.push_message(group_id, ImageSendMessage(original_content_url=url))
+        client.push_message(group_id, ImageSendMessage(original_content_url=url, preview_image_url=url))
 
 def get_signature_image_url(today):
     s3 = boto3.client('s3')
     BUCKET = os.getenv('AWS_S3_BUCKET_NAME_FOR_DATA')
-    #S3からdata_file配下のlistを手に入れて、key名を取得すれば
-    #memberはなんとかできる
     data_prefixes = get_data_prefix(s3, BUCKET)
     today = get_today_date(today)
     year = today[0]
@@ -77,8 +74,8 @@ def get_signature_image_url(today):
     signature_image_url = []
 
     for data_dir in data_prefixes:
-        KEY = f'data_file/{data_dir}/{year}/{month}/{week_name}/posts_count_per_date.csv'
-        signature_image_url.apend(s3.generate_presigned_url(
+        KEY = f'data_file/{data_dir}/{year}/{month}/{week_name}/posts_count_per_date.png'
+        signature_image_url.append(s3.generate_presigned_url(
             ClientMethod = 'get_object',
             Params = {'Bucket' : BUCKET, 'Key' : KEY},
             ExpiresIn = 3600,
