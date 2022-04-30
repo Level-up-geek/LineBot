@@ -17,6 +17,7 @@ load_dotenv()
 import boto3, datetime, calendar
 
 import logging, os, sys
+from datetime import timedelta
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -66,21 +67,46 @@ def push_message(client, group_id, today):
 def get_signature_image_url(today):
     s3 = boto3.client('s3')
     BUCKET = os.getenv('AWS_S3_BUCKET_NAME_FOR_DATA')
+    KEY = ''
+    keys = {
+        'week': f'data_file/data_dir/{year}/{month}/{week_name}/posts_count_per_date.png',
+        'month': f'data_file/data_dir/{year}/{month}/posts_count_per_date.png',
+        'week-month': ''
+    }
     data_prefixes = get_data_prefix(s3, BUCKET)
     today = get_today_date(today)
     year = today[0]
     month = today[1]
     week_name = today[2]
+    week_month_flag = today[3]
+    key_alt = keys[week_month_flag]
     signature_image_url = []
 
-    for data_dir in data_prefixes:
-        KEY = f'data_file/{data_dir}/{year}/{month}/{week_name}/posts_count_per_date.png'
-        signature_image_url.append(s3.generate_presigned_url(
-            ClientMethod = 'get_object',
-            Params = {'Bucket' : BUCKET, 'Key' : KEY},
-            ExpiresIn = 3600,
-            HttpMethod = 'GET'
-        ))
+    #日曜日と月末が被った時
+    if week_month_flag == 'week-month':
+        for data_dir in data_prefixes:
+            for key in keys.values():
+                if not key:
+                    break
+                
+                KEY = key.replace('data_dir', data_dir)
+
+                signature_image_url.append(s3.generate_presigned_url(
+                    ClientMethod = 'get_object',
+                    Params = {'Bucket' : BUCKET, 'Key' : KEY},
+                    ExpiresIn = 3600,
+                    HttpMethod = 'GET'
+                ))
+    else:
+        for data_dir in data_prefixes:
+            KEY = key_alt.replace('data_dir', data_dir)
+            
+            signature_image_url.append(s3.generate_presigned_url(
+                ClientMethod = 'get_object',
+                Params = {'Bucket' : BUCKET, 'Key' : KEY},
+                ExpiresIn = 3600,
+                HttpMethod = 'GET'
+            ))
 
     return signature_image_url
 
@@ -89,6 +115,14 @@ def get_today_date(today: str) -> tuple:
     time = today.replace('Z', '+00:00')
 
     today = datetime.datetime.fromisoformat(time).date()
+    tomorrow = today + timedelta(days=1)
+    week_month_flag = 'week'
+
+    if tomorrow.day == 1 and today.weekday() == 6:
+        week_month_flag = 'week-month'
+    elif tomorrow == 1:
+        week_month_flag = 'month'
+    
 
     week_on_number = {
         0: 'first_week',
@@ -104,7 +138,7 @@ def get_today_date(today: str) -> tuple:
     week_list = [[i, week_list] for i, week_list in enumerate(calendar_list) if today in week_list ]
     week_number = week_list[0][0]
 
-    return today.year, today.month, week_on_number[week_number]
+    return today.year, today.month, week_on_number[week_number], week_month_flag
 
 def get_data_prefix(s3, BUCKET):
     res = s3.list_objects(Bucket=BUCKET, Prefix='data_file/', Delimiter="/")

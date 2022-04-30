@@ -58,6 +58,7 @@ def main(all_get_flag, week_or_month_flag):
 """
 csvファイルを作成する
 グラフを作る関数を呼び出す
+get_all_postsで取得した場合のresultには対応していない。
 """
 def create_csv(data, csv_file_path_alt, year, month):
     comparison_source_ax = None
