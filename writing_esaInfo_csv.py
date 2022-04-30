@@ -16,8 +16,7 @@ logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
-    #MEMO:todayにしないと、Git Hub Actionsで実行された時の日付が取得できない
-    today = datetime.date(2022, 4, 21)
+    today = datetime.date.today()
     week_number = 0
 
     if week_or_month_flag == 'week':        
