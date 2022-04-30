@@ -68,16 +68,16 @@ def get_signature_image_url(today):
     s3 = boto3.client('s3')
     BUCKET = os.getenv('AWS_S3_BUCKET_NAME_FOR_DATA')
     KEY = ''
-    keys = {
-        'week': f'data_file/data_dir/{year}/{month}/{week_name}/posts_count_per_date.png',
-        'month': f'data_file/data_dir/{year}/{month}/posts_count_per_date.png',
-        'week-month': ''
-    }
     data_prefixes = get_data_prefix(s3, BUCKET)
     today = get_today_date(today)
     year = today[0]
     month = today[1]
     week_name = today[2]
+    keys = {
+        'week': f'data_file/data_dir/{year}/{month}/{week_name}/posts_count_per_date.png',
+        'month': f'data_file/data_dir/{year}/{month}/posts_count_per_date.png',
+        'week-month': ''
+    }
     week_month_flag = today[3]
     key_alt = keys[week_month_flag]
     signature_image_url = []
@@ -120,7 +120,7 @@ def get_today_date(today: str) -> tuple:
 
     if tomorrow.day == 1 and today.weekday() == 6:
         week_month_flag = 'week-month'
-    elif tomorrow == 1:
+    elif tomorrow.day == 1:
         week_month_flag = 'month'
     
 
