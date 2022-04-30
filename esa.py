@@ -11,7 +11,7 @@ def get_posts(query_date, team_name, week_or_month_flag):
     access_token = os.getenv('ESA_ACCESS_TOKEN')
     if week_or_month_flag == 'week':
         query_date_str = [date.strftime('%Y-%m-%d') for date in query_date]
-        #queryが~以下ができない。未満しかできないので週の最終日を+1して置き換える取得する。
+        #esaのqueryでは~以下ができない。未満しかできないので週の最終日を+1して置き換える取得する。
         query_date_last = str(int(query_date_str[-1].split('-')[2]) + 1).zfill(2)
         week_last_date = query_date_str[-1][:8] + query_date_last
         q = f'created: <{week_last_date} created: >{query_date_str[0]}'
@@ -120,6 +120,9 @@ def get_members(team_name):
 
 """"
 ユーザごとの日付ごとに投稿した数
+
+投稿データを取得してその投稿日から、
+その年、月や日にちの初期化であったり、投稿数のカウントをしている
 """
 def create_posts_per_date(res, posts_per_date={}, pre_month=0, pre_year=0):
     #MEMO:最初の一回だけでいいよね。
@@ -187,7 +190,6 @@ def extract_week_list(post_per_date_user, month, year, query_date):
     #[year]も月の時のように処理しないといけない。
 
     for user, post_per_date in post_per_date_user.items():
-        #listでkeysを確保しておくことで、iterator中にdictやlistを変更してエラー起きなくなる。
         for day in list(post_per_date[year][month].keys()):
             if datetime.date(int(year), int(month), int(day)) not in query_date:
                 post_per_date_user[user][year][month].pop(day)

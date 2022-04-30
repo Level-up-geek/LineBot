@@ -22,7 +22,6 @@ def main(all_get_flag, week_or_month_flag):
     if week_or_month_flag == 'week':        
         c = calendar.Calendar(0)
         calendar_list = c.monthdatescalendar(today.year, today.month)
-        #MEMO:今週分を抽出・Lambda側でもグラフを取り出すさいに使う。
         week_list = [[i, week_list] for i, week_list in enumerate(calendar_list) if today in week_list ]
         #mothdatecalendarのlistの要素番号が週番号と見立てた。
         week_number = week_list[0][0]
@@ -95,7 +94,6 @@ def create_csv(data, csv_file_path_alt, year, month):
         #あと、前週との比較は棒グラフにするか、user同士とか
         # df. plot.bar()
         image_file_path = csv_file_path.replace('.csv', '.png')
-        #dpiは1ピクセルにどのくらいのドットで表すか。デフォは100
         plt.savefig(fo.check_exist(image_file_path), dpi=300)
 
         if comparison_source_ax is None:

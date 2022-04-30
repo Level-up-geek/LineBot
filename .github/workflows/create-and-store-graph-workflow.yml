@@ -3,7 +3,7 @@ name: Graph
 on:
   schedule:
   #毎週日曜日と月末の23:45
-    - cron: '40 14 * * 0'
+    - cron: '30 14 * * 0'
     - cron: '40 14 28-31 * *'
   workflow_dispatch:
     
