@@ -194,8 +194,6 @@ def extract_week_list(post_per_date_user, month, year, query_date):
             if datetime.date(int(year), int(month), int(day)) not in query_date:
                 post_per_date_user[user][year][month].pop(day)
         if other_month is not None:
-            print(other_month)
-            print(post_per_date)
             for day in list(post_per_date[year][other_month].keys()):
                 if datetime.date(int(year), int(other_month), int(day)) not in query_date:
                     post_per_date_user[user][year][other_month].pop(day)
