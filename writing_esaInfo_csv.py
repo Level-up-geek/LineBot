@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+import numpy as np
 load_dotenv()
 
 from module.file_operation import FileOperation as fo
@@ -16,7 +17,7 @@ logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
-    today = datetime.date.today()
+    today = datetime.date(2022, 3, 20)
     week_number = 0
 
     if week_or_month_flag == 'week':        
@@ -76,6 +77,12 @@ def create_csv(data, csv_file_path_alt, year, month):
         
         x_label = '日付け'
         y_label = '投稿数'
+        xticks = None
+        #月のグラフはx目盛り2日ごと(indexで指定)
+        if len(date_list) >= 8:
+            start = 0
+            end = int(date_list[-1][0]) + 1
+            xticks = np.arange(start, end, step=2)
         
         #比較図の作成(2人用)
         if comparison_source_ax is not None:
@@ -88,10 +95,10 @@ def create_csv(data, csv_file_path_alt, year, month):
             
         title = f'{member} {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
     
-        ax = df.plot(title=title, yticks=[0, 1, 2, 3], x=x_label, color='pink', ylim=(0, 3), label=member)
+        ax = df.plot(title=title, yticks=[0, 1, 2, 3], xticks=xticks, x=x_label, color='pink', ylim=(0, 3), label=member)
         ax.set_xlabel(xlabel=x_label)
         ax.set_ylabel(ylabel=y_label, labelpad=15, rotation = 'horizontal')
-        #MEMO: 月のグラフは週ごと(1~7, 8~15, 16~23, 24~31)の合計を出してそのグラフで
+
         #あと、前週との比較は棒グラフにするか、user同士とか
         # df. plot.bar()
         image_file_path = csv_file_path.replace('.csv', '.png')
