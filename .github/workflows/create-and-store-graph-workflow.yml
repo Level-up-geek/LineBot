@@ -47,5 +47,15 @@ jobs:
         if: ${{ github.event.schedule == '40 14 28-31 * *' && env.month_last_day_flag }}
         run: python writing_esaInfo_csv.py 0 month
 
+      - name: Slack Notification
+        if: ${{ failure() }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 失敗しました
+          SlACK_MESSAGE:  Actions URLからエラーを確認してください
+          SLACK_USERNAME: failure actions url
+          SLACK_WEBHOOK: ${{ secrets.NOTIFY_FAILURE_SLACK_URL }}
+
       - name: Store csv and png file to s3
         run: aws s3 sync data_file/ s3://posts-per-date-data/data_file/

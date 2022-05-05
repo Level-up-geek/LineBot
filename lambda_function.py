@@ -54,8 +54,9 @@ def lambda_handler(event, context):
     
     @handler.add(MessageEvent, message=TextMessage)
     def message(line_event):
-        text = line_event.message.text
-        line_bot_api.reply_message(line_event.reply_token, TextSendMessage(text=text))
+        #text = line_event.message.text
+        #line_bot_api.reply_message(line_event.reply_token, TextSendMessage(text=text))
+        pass
     
     return {'statusCode': 200, 'body': ''}
 
