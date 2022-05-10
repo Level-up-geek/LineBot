@@ -95,7 +95,7 @@ def create_csv(data, csv_file_path_alt, year, month):
             
         title = f'{member} {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
     
-        ax = df.plot(title=title, yticks=[0, 1, 2, 3], xticks=xticks, x=x_label, color='pink', ylim=(0, 3), label=member)
+        ax = df.plot(title=title, yticks=[0, 1, 2, 3, 4], xticks=xticks, x=x_label, color='pink', ylim=(0, 3), label=member)
         ax.set_xlabel(xlabel=x_label)
         ax.set_ylabel(ylabel=y_label, labelpad=15, rotation = 'horizontal')
 
