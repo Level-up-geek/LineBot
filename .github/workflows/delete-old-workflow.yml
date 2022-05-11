@@ -17,3 +17,13 @@ jobs:
         with:
           retain_days: 15
           keep_minimum_runs: 0
+      
+      - name: Slack Notification
+        if: ${{ failure() }}
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 失敗しました
+          SlACK_MESSAGE:  Actions URLからエラーを確認してください
+          SLACK_USERNAME: failure actions url
+          SLACK_WEBHOOK: ${{ secrets.NOTIFY_FAILURE_SLACK_URL }}
