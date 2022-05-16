@@ -78,6 +78,10 @@ def create_csv(data, csv_file_path_alt, year, month):
         x_label = '日付け'
         y_label = '投稿数'
         xticks = None
+        yticks = [0, 1, 2, 3, 4]
+        ylim = (0, 4)
+        dpi = 300
+
         #月のグラフはx目盛り2日ごと(indexで指定)
         if len(date_list) >= 8:
             start = 0
@@ -86,27 +90,28 @@ def create_csv(data, csv_file_path_alt, year, month):
         
         #比較図の作成(2人用)
         if comparison_source_ax is not None:
-            title = f'比較: {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
+            comparison_title = f'比較: {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
+
             comparison_distination_df = df.rename(columns={'投稿数': f'{member}の投稿数'})
-            comparison_distination_df.plot(title=title, x=x_label, color='r', label=member, ylim=(0, 3), ax=comparison_source_ax)
+            comparison_distination_df.plot(title=comparison_title, x=x_label, color='r', label=member, ylim=ylim, ax=comparison_source_ax)
 
             image_file_path = csv_file_path.replace('.csv', '.png').replace(member, 'comparison')
-            plt.savefig(fo.check_exist(image_file_path), dpi=300)
+            plt.savefig(fo.check_exist(image_file_path), dpi=dpi)
             
         title = f'{member} {monthes[0]}/{date_list[0][0]}日-{monthes[-1]}/{date_list[-1][0]}日の投稿数推移'
     
-        ax = df.plot(title=title, yticks=[0, 1, 2, 3, 4], xticks=xticks, x=x_label, color='pink', ylim=(0, 3), label=member)
+        ax = df.plot(title=title, yticks=yticks, xticks=xticks, x=x_label, color='pink', ylim=ylim, label=member)
         ax.set_xlabel(xlabel=x_label)
         ax.set_ylabel(ylabel=y_label, labelpad=15, rotation = 'horizontal')
 
         #あと、前週との比較は棒グラフにするか、user同士とか
         # df. plot.bar()
         image_file_path = csv_file_path.replace('.csv', '.png')
-        plt.savefig(fo.check_exist(image_file_path), dpi=300)
+        plt.savefig(fo.check_exist(image_file_path), dpi=dpi)
 
         if comparison_source_ax is None:
             comparison_source_df = df.rename(columns={'投稿数': f'{member}の投稿数'})
-            comparison_source_ax = comparison_source_df.plot(title=title, yticks=[0, 1, 2, 3], x=x_label, color='b', ylim=(0, 3), label=member)
+            comparison_source_ax = comparison_source_df.plot(title=title, yticks= yticks, x=x_label, color='b', ylim=ylim, label=member)
 
 """
 標準入力のチェック
