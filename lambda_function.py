@@ -84,11 +84,10 @@ def get_signature_image_url(today):
     signature_image_url = []
 
     #日曜日と月末が被った時
-    #これだと、EventBridgeで週の分と月末の分で二回実行される。計6枚の画像が送られてしまう。
-    #event['time']から、minuteを取得。そのminuteで週の分か月の分か判断できるようにする？　
     if week_month_flag == 'week-month':
         for data_dir in data_prefixes:
             for key in keys.values():
+            #weekとmonthが送信出来たら終了
                 if not key:
                     break
                 
@@ -116,7 +115,8 @@ def get_signature_image_url(today):
 
 def get_today_date(today: str) -> tuple:
     time = today.replace('Z', '+00:00')
-
+    #手動実行するためのもの
+    #time = datetime.date(year, month, week)
     today = datetime.datetime.fromisoformat(time).date()
     tomorrow = today + timedelta(days=1)
     week_month_flag = 'week'
