@@ -116,7 +116,7 @@ def get_signature_image_url(today):
 def get_today_date(today: str) -> tuple:
     time = today.replace('Z', '+00:00')
     #手動実行するためのもの
-    #time = datetime.date(year, month, week)
+    #today = datetime.date(year, month, week)
     today = datetime.datetime.fromisoformat(time).date()
     tomorrow = today + timedelta(days=1)
     week_month_flag = 'week'
