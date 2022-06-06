@@ -45,7 +45,8 @@ def main(all_get_flag, week_or_month_flag):
         1: 'second_week',
         2: 'third_week',
         3: 'fourth_week',
-        4: 'fifth_week'
+        4: 'fifth_week',
+        5: 'six_week'
     }
 
     if week_or_month_flag == 'month':

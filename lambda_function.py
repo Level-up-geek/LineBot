@@ -137,8 +137,8 @@ def get_today_date(today: str) -> tuple:
         1: 'second_week',
         2: 'third_week',
         3: 'fourth_week',
-        4: 'fifth_week'
-
+        4: 'fifth_week',
+        5: 'six_week'
     }
 
     c = calendar.Calendar(0)
