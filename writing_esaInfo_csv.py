@@ -18,6 +18,7 @@ logger.setLevel(logging.ERROR)
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
     today = datetime.date.today()
+    #today = datetime.date(2022, 5, 31)
     week_number = 0
 
     if week_or_month_flag == 'week':        

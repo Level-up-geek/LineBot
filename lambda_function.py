@@ -96,7 +96,7 @@ def get_signature_image_url(today):
                 signature_image_url.append(s3.generate_presigned_url(
                     ClientMethod = 'get_object',
                     Params = {'Bucket' : BUCKET, 'Key' : KEY},
-                    ExpiresIn = 3600,
+                    ExpiresIn = 43200,
                     HttpMethod = 'GET'
                 ))
     else:
@@ -106,7 +106,7 @@ def get_signature_image_url(today):
             signature_image_url.append(s3.generate_presigned_url(
                 ClientMethod = 'get_object',
                 Params = {'Bucket' : BUCKET, 'Key' : KEY},
-                ExpiresIn = 3600,
+                ExpiresIn = 43200,
                 HttpMethod = 'GET'
             ))
 
@@ -116,7 +116,7 @@ def get_signature_image_url(today):
 def get_today_date(today: str) -> tuple:
     time = today.replace('Z', '+00:00')
     #手動実行するためのもの
-    #today = datetime.date(year, month, week)
+    #today = datetime.date(2022, 5, 31)
     today = datetime.datetime.fromisoformat(time).date()
     tomorrow = today + timedelta(days=1)
     week_month_flag = 'week'

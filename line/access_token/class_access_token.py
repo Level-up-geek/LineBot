@@ -109,7 +109,7 @@ class AccessToken:
         import datetime
         pass_time = datetime.datetime.fromtimestamp(verify_object['expires_in'])
 
-        if pass_time.day < 3:
+        if pass_time.day <= 3:
             self.__message = 'アクセストークンの有効期限が近づいています。\n再発行してください。\n詳しくはslackのピン止めを確認してください。'
             return False
         
