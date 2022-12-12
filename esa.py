@@ -15,10 +15,13 @@ def get_posts(query_date, team_name, week_or_month_flag):
         query_date_last = str(int(query_date_str[-1].split('-')[2]) + 1).zfill(2)
         week_last_date = query_date_str[-1][:8] + query_date_last
         q = f'created: <{week_last_date} created: >{query_date_str[0]}'
-    else:
+    elif week_or_month_flag == 'month':
         #monthの場合は既にquery_dateがstr型
         q = f'created: <{query_date[1]} created: >{query_date[0]}'
-    
+    else:
+        #yearの場合
+        q = f'created: <{query_date}-12-30 created: >{query_date}-01-01'
+
     url = f'https://api.esa.io/v1/teams/{team_name}/posts'
     headers = {
         'Authorization': f'Bearer {access_token}',
@@ -29,7 +32,6 @@ def get_posts(query_date, team_name, week_or_month_flag):
     pre_month = '0'
     pre_year = '0'
     result = {}
-
     while next_page is not None:
         body = {
             'page': next_page,
@@ -46,6 +48,8 @@ def get_posts(query_date, team_name, week_or_month_flag):
                 logging.info('リセット時間: ' + str(datetime.datetime.fromtimestamp(int((res.headers['X-RateLimit-Reset'])))))
 
             result, pre_month, pre_year  = create_posts_per_date(res, posts_per_date=result, pre_month=pre_month, pre_year=pre_year)
+            #MEMO:2022年9月4日でのリクエストでresultに2022年8月分の記事が取得できていない。。。
+            #もしかしたら、その週は誰も投稿していない。つまりapiリクエストのレスポンスに8月分取得できていないだけ説ある。
         else:
             logging.error(res.json())
             sys.exit(1)
@@ -115,7 +119,7 @@ def get_members(team_name):
         'Content-Type': 'application/json;charset=UTF-8'
     }
     res = requests.get(url, headers=headers)
-    
+
     return [member['screen_name'] for member in res.json()['members'] if member != 'esa_bot']
 
 """"
@@ -166,36 +170,50 @@ def create_posts_per_date(res, posts_per_date={}, pre_month=0, pre_year=0):
     return posts_per_date, pre_month, pre_year
 
 """
-post_per_dateから抽出したい週のdictを返す
-query_date: 抽出したい週(date型)の日付けが入ったのリスト
+create_posts_per_dateのresult(post_per_date_user)から抽出したい週のdictを返す
+resultにはその週に投稿されたユーザと日付が結びついているので、calenderでその月の日付全て取得して一致する部分を抽出する
+query_date: 抽出したい週(date型)の日付けが入ったリスト
 
 ・注意
 query_dateで月をまたいでいる場合、次の月の投稿がされてないとkeyエラーになる
 (普通は、cronでスケジュールされてるからまだ投稿されていない月が含まれる形で実行はされないはず。)
 """
 def extract_week_list(post_per_date_user, month, year, query_date):
-    other_month = None
+    pre_month = int(month) - 1
+    next_month = int(month) + 1
+    if next_month == 13:
+        next_month = 1
+    if pre_month == 0:
+        pre_month = 12
+    next_month_over_flag = False
+    pre_month_over_flag = False
 
-    c = calendar.monthcalendar(year=int(year), month=int(month) + 1)
+    c = calendar.monthcalendar(year=int(year), month=next_month)
     next_day_list = [day for day in list(flatten(c)) if day != 0]
 
-    c = calendar.monthcalendar(year=int(year), month=int(month) - 1)
+    c = calendar.monthcalendar(year=int(year), month=pre_month)
     pre_day_list = [day for day in list(flatten(c)) if day != 0]
     #月をまたがった時の対応
-    if datetime.date(int(year), int(month) - 1, pre_day_list[-1]) in query_date:
-        other_month = str(int(month) - 1)
-    elif datetime.date(int(year), int(month) + 1, next_day_list[0]) in query_date:
-        other_month = str(int(month) + 1)
-    #MEMO:1月の時の対応(年マタギ)
+    if datetime.date(int(year), pre_month, pre_day_list[-1]) in query_date:
+        pre_month = str(pre_month)
+        pre_month_over_flag = True
+    elif datetime.date(int(year), next_month, next_day_list[0]) in query_date:
+        next_month = str(next_month)
+        next_month_over_flag = True
     #[year]も月の時のように処理しないといけない。
 
+    #当月、前月、次月のそれぞれについて抽出したい日付以外を削除する
     for user, post_per_date in post_per_date_user.items():
-        for day in list(post_per_date[year][month].keys()):
-            if datetime.date(int(year), int(month), int(day)) not in query_date:
-                post_per_date_user[user][year][month].pop(day)
-        if other_month is not None:
-            for day in list(post_per_date[year][other_month].keys()):
-                if datetime.date(int(year), int(other_month), int(day)) not in query_date:
-                    post_per_date_user[user][year][other_month].pop(day)
-    
+        delete_not_want_day(post_per_date_user, post_per_date, user, year, month, query_date)
+        if next_month_over_flag:
+            delete_not_want_day(post_per_date_user, post_per_date, user, year, next_month, query_date)
+        elif pre_month_over_flag:
+            delete_not_want_day(post_per_date_user, post_per_date, user, year, pre_month, query_date)
+
     return post_per_date_user
+
+""" 欲しい日付のデータ以外はpost_per_date_userから削除する """
+def delete_not_want_day(post_per_date_user, post_per_date, user, year, month, query_date):
+    for day in list(post_per_date[year][month].keys()):
+        if datetime.date(int(year), int(month), int(day)) not in query_date:
+          post_per_date_user[user][year][month].pop(day)
