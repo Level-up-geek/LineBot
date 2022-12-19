@@ -10,14 +10,15 @@ import esa
 import sys, datetime, logging, os, calendar
 import pandas as pd
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
 
 def main(all_get_flag, week_or_month_flag):
     team_name = os.getenv('ESA_TEAM_NAME')
-    today = datetime.date.today()
-    #today = datetime.date(2022, 10, 2)
+    #today = datetime.date.today()
+    today = datetime.date(2022, 12, 18)
     week_number = 0
 
     if week_or_month_flag == 'week':        
@@ -75,7 +76,6 @@ get_all_postsで取得した場合のresultには対応していない。
 """
 def create_csv(data, csv_file_path_alt, year, month, one_year_graph_flag=False):
     #日本語表示できるように
-    plt.rcParams['font.family'] = 'Meiryo'
     comparison_source_ax = None
     #MEMO:memberが増えると、member同士の比較は修正しないとむり。
     for member in data.keys():
