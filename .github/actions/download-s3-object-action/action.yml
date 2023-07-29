@@ -23,5 +23,5 @@ runs:
     - id: download-s3-object
       run: |
         downloaded_access_token=$(cat ./access_token.josn | tr -d '\n')
-        echo "::set-output name=s3-object::$(echo $downloaded_access_token | jq -r -R 'fromjson? | ${{ inputs.key }}')"
+        echo "s3-object=$(echo $downloaded_access_token | jq -r -R 'fromjson? | ${{ inputs.key }}')" >> $GITHUB_OUTPUT
       shell: bash
